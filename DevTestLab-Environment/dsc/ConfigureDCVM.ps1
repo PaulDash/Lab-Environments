@@ -4,20 +4,16 @@
     (
         [Parameter(Mandatory)] [String]$DomainFQDN,
         [Parameter(Mandatory)] [System.Management.Automation.PSCredential]$Admincreds,
-        [Parameter(Mandatory)] [System.Management.Automation.PSCredential]$AdfsSvcCreds,
-        [Parameter(Mandatory)] [String]$PrivateIP,
-        [Parameter(Mandatory)] [Boolean]$ConfigureADFS
+        [Parameter(Mandatory)] [String]$PrivateIP
     )
 
-    Import-DscResource -ModuleName xActiveDirectory, NetworkingDsc, xPSDesiredStateConfiguration, ActiveDirectoryCSDsc, CertificateDsc, cADFS, xDnsServer, ComputerManagementDsc
+    Import-DscResource -ModuleName xActiveDirectory, NetworkingDsc, xPSDesiredStateConfiguration, ActiveDirectoryCSDsc, CertificateDsc, xDnsServer, ComputerManagementDsc
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     [System.Management.Automation.PSCredential] $DomainCredsNetbios = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
-    [System.Management.Automation.PSCredential] $AdfsSvcCredsQualified = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($AdfsSvcCreds.UserName)", $AdfsSvcCreds.Password)
     $Interface = Get-NetAdapter| Where-Object Name -Like "Ethernet*"| Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
     $ComputerName = Get-Content env:computername
     [String] $SPTrustedSitesName = "SPSites"
-    [String] $ADFSSiteName = "ADFS"
 
     Node localhost
     {
@@ -84,7 +80,7 @@
             DependsOn = "[PendingReboot]Reboot1"
         }
 
-        WindowsFeature AddADFeature1    { Name = "RSAT-ADLDS";          Ensure = "Present"; DependsOn = "[PendingReboot]Reboot1" }
+<#
         WindowsFeature AddADFeature2    { Name = "RSAT-ADDS-Tools";     Ensure = "Present"; DependsOn = "[PendingReboot]Reboot1" }
 
         if ($ConfigureADFS -eq $true) {
@@ -165,29 +161,6 @@
                 DependsOn = '[WaitForCertificateServices]WaitAfterADCSProvisioning'
             }
 
-            xADUser CreateAdfsSvcAccount
-            {
-                DomainAdministratorCredential = $DomainCredsNetbios
-                DomainName = $DomainFQDN
-                UserName = $AdfsSvcCreds.UserName
-                Password = $AdfsSvcCreds
-                Ensure = "Present"
-                PasswordAuthentication = 'Negotiate'
-                PasswordNeverExpires = $true
-                DependsOn = "[CertReq]ADFSSiteCert", "[CertReq]ADFSSigningCert", "[CertReq]ADFSDecryptionCert"
-            }
-
-            Group AddAdfsSvcAccountToDomainAdminsGroup
-            {
-                GroupName='Administrators'   
-                Ensure= 'Present'             
-                MembersToInclude= $AdfsSvcCredsQualified.UserName
-                Credential = $DomainCredsNetbios    
-                PsDscRunAsCredential = $DomainCredsNetbios
-                DependsOn = "[xADUser]CreateAdfsSvcAccount"
-            }
-
-            WindowsFeature AddADFS { Name = "ADFS-Federation"; Ensure = "Present"; DependsOn = "[Group]AddAdfsSvcAccountToDomainAdminsGroup" }
 
             xDnsRecord AddADFSHostDNS {
                 Name = $ADFSSiteName
@@ -196,47 +169,6 @@
                 Type = "ARecord"
                 Ensure = "Present"
                 DependsOn = "[PendingReboot]Reboot1"
-            }
-
-            cADFSFarm CreateADFSFarm
-            {
-                ServiceCredential = $AdfsSvcCredsQualified
-                InstallCredential = $DomainCredsNetbios
-                #CertificateThumbprint = $siteCert
-                DisplayName = "$ADFSSiteName.$DomainFQDN"
-                ServiceName = "$ADFSSiteName.$DomainFQDN"
-                #SigningCertificateThumbprint = $signingCert
-                #DecryptionCertificateThumbprint = $decryptionCert
-                CertificateName = "$ADFSSiteName.$DomainFQDN"
-                SigningCertificateName = "$ADFSSiteName.Signing"
-                DecryptionCertificateName = "$ADFSSiteName.Decryption"
-                Ensure= 'Present'
-                PsDscRunAsCredential = $DomainCredsNetbios
-                DependsOn = "[WindowsFeature]AddADFS"
-            }
-
-            cADFSRelyingPartyTrust CreateADFSRelyingParty
-            {
-                Name = $SPTrustedSitesName
-                Identifier = "urn:federation:sharepoint"
-                ClaimsProviderName = @("Active Directory")
-                WsFederationEndpoint = "https://$SPTrustedSitesName.$DomainFQDN/_trust/"
-                AdditionalWSFedEndpoint = @("https://*.$DomainFQDN/")
-                IssuanceAuthorizationRules = '=> issue(Type = "http://schemas.microsoft.com/authorization/claims/permit", value = "true");'
-                IssuanceTransformRules = @"
-@RuleTemplate = "LdapClaims"
-@RuleName = "AD"
-c:[Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname", Issuer == "AD AUTHORITY"]
-=> issue(
-store = "Active Directory", 
-types = ("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"), 
-query = ";mail,tokenGroups(longDomainQualifiedName);{0}", 
-param = c.Value);
-"@
-                ProtocolProfile = "WsFed-SAML"
-                Ensure= 'Present'
-                PsDscRunAsCredential = $DomainCredsNetbios
-                DependsOn = "[cADFSFarm]CreateADFSFarm"
             }
 
             xScript ExportCertificates
@@ -267,7 +199,9 @@ param = c.Value);
                 }
                 DependsOn = "[CertReq]ADFSSiteCert", "[CertReq]ADFSSigningCert", "[CertReq]ADFSDecryptionCert"
             }
+
         }
+#>
     }
 }
 
