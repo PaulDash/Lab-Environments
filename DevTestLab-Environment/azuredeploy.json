@@ -35,13 +35,6 @@
         "description": "Input must meet password complexity requirements as documented for property 'adminPassword' in https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-create-or-update"
       }
     },
-    "serviceAccountsPassword": {
-      "type": "securestring",
-      "minLength": 8,
-      "metadata": {
-        "description": "Password for all service account and SharePoint passphrase. It must meet password complexity requirements as documented for property 'adminPassword' in https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-create-or-update"
-      }
-    },
     "vmDCSize": {
       "type": "string",
       "defaultValue": "Standard_F2s_v2",
@@ -70,7 +63,7 @@
         "description": "Size of the IIS VM"
       }
     },
-    "vmLinuxSize": {
+    "vmCALinuxSize": {
       "type": "string",
       "defaultValue": "Standard_B1ms",
       "metadata": {
@@ -112,7 +105,7 @@
       "metadata": {
         "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
       },
-      "defaultValue": "https://github.com/Azure/azure-devtestlab/raw/master/Environments/SharePoint-AllVersions"
+      "defaultValue": "https://github.com/PaulDash/PKI/tree/master/DevTestLab-Environment"
     },
     "_artifactsLocationSasToken": {
       "type": "securestring",
@@ -124,55 +117,41 @@
   },
   "variables": {
     "generalSettings": {
-      "vmDCName": "DC",
-      "vmSQLName": "SQL",
-      "vmSP2013Name": "SP2013",
-      "vmSP2016Name": "SP2016",
-      "vmSP2019Name": "SP2019",
-      "vmStorageAccountType": "Standard_LRS",
-      "sqlAlias": "SQLAlias",
-      "spSuperUserName": "spSuperUser",
-      "spSuperReaderName": "spSuperReader",
-      "adfsSvcUserName": "adfssvc",
-      "adfsSvcPassword": "[parameters('serviceAccountsPassword')]",
-      "sqlSvcUserName": "sqlsvc",
-      "sqlSvcPassword": "[parameters('serviceAccountsPassword')]",
-      "spSetupUserName": "spsetup",
-      "spSetupPassword": "[parameters('serviceAccountsPassword')]",
-      "spFarmUserName": "spfarm",
-      "spFarmPassword": "[parameters('serviceAccountsPassword')]",
-      "spAppPoolUserName": "spapppool",
-      "spAppPoolPassword": "[parameters('serviceAccountsPassword')]",
-      "spPassphrase": "[parameters('serviceAccountsPassword')]"
+      "vmDCName":      "DC",
+      "vmCARootName":  "CA-Root",
+      "vmCAEntName":   "CA-Ent",
+      "vmIISName":     "IIS",
+      "vmCALinuxName": "CA-Linux",
+      "vmStorageAccountType": "Standard_LRS"
     },
     "networkSettings": {
-      "vNetPrivateName": "[concat(resourceGroup().name, '-vnet')]",
-      "vNetPrivatePrefix": "10.0.0.0/16",
-      "vNetPrivateSubnetDCName": "Subnet-1",
-      "vNetPrivateSubnetDCPrefix": "10.0.1.0/24",
-      "vNetPrivateSubnetSQLName": "Subnet-2",
-      "vNetPrivateSubnetSQLPrefix": "10.0.2.0/24",
-      "vNetPrivateSubnetSPName": "Subnet-3",
-      "vNetPrivateSubnetSPPrefix": "10.0.3.0/24",
-      "nsgDCVNetName": "NSG-VNet-DC",
-      "nsgSQLVNetName": "NSG-VNet-SQL",
-      "nsgSPVNetName": "NSG-VNet-SP",
+      "vNetName":   "[concat(resourceGroup().name, '-vnet')]",
+      "vNetPrefix": "10.20.0.0/16",
+      "vNetSubnet1Name":   "GDC-Domain",
+      "vNetSubnet1Prefix": "10.20.1.0/24",
+      "vNetSubnet2Name":   "GDC-VPN",
+      "vNetSubnet2Prefix": "10.20.2.0/24",
+      "nsgDCVNetName":      "NSG-DC",
+      "nsgCARootVNetName":  "NSG-CARoot",
+      "nsgCAEntVNetName":   "NSG-CAEnt",
+      "nsgIISVNetName":     "NSG-IIS",
+      "nsgCALinuxVNetName": "NSG-CALinux",
       "vmDCPublicIPNicAssociation": {
         "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmDC').vmPublicIPName)]"
       },
-      "vmSQLPublicIPNicAssociation": {
-        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmSQL').vmPublicIPName)]"
+      "vmIISPublicIPNicAssociation": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmIIS').vmPublicIPName)]"
       },
-      "vmSP2013PublicIPNicAssociation": {
-        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmSP2013').vmPublicIPName)]"
+      "vmCARootPublicIPNicAssociation": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCARoot').vmPublicIPName)]"
       },
-      "vmSP2016PublicIPNicAssociation": {
-        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmSP2016').vmPublicIPName)]"
+      "vmCAEntPublicIPNicAssociation": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCAEnt').vmPublicIPName)]"
       },
-      "vmSP2019PublicIPNicAssociation": {
-        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmSP2019').vmPublicIPName)]"
+      "vmCALinuxPublicIPNicAssociation": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCALinux').vmPublicIPName)]"
       },
-      "nsgRuleAllowRdpPort": [
+      "nsgRuleAllowRDPPort": [
         {
           "name": "allow-rdp-rule",
           "properties": {
@@ -187,12 +166,60 @@
             "direction": "Inbound"
           }
         }
+      ],
+      "nsgRuleAllowSSHPort": [
+        {
+          "name": "allow-rdp-rule",
+          "properties": {
+            "description": "Allow SSH",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRange": "22",
+            "sourceAddressPrefix": "Internet",
+            "destinationAddressPrefix": "*",
+            "access": "Allow",
+            "priority": 100,
+            "direction": "Inbound"
+          }
+        }
+      ],
+      "nsgRuleAllowHTTPPort": [
+        {
+          "name": "allow-rdp-rule",
+          "properties": {
+            "description": "Allow HTTP",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRange": "80",
+            "sourceAddressPrefix": "Internet",
+            "destinationAddressPrefix": "*",
+            "access": "Allow",
+            "priority": 100,
+            "direction": "Inbound"
+          }
+        }
+      ],
+      "nsgRuleAllowHTTPSPort": [
+        {
+          "name": "allow-rdp-rule",
+          "properties": {
+            "description": "Allow HTTPS",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRange": "443",
+            "sourceAddressPrefix": "Internet",
+            "destinationAddressPrefix": "*",
+            "access": "Allow",
+            "priority": 100,
+            "direction": "Inbound"
+          }
+        }
       ]
     },
     "vmDC": {
       "vmImagePublisher": "MicrosoftWindowsServer",
       "vmImageOffer": "WindowsServer",
-      "vmImageSKU": "2019-Datacenter",
+      "vmImageSKU": "2019-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-DC-OS",
       "vmVmSize": "[parameters('vmDCSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmDCName, '-0')]",
@@ -201,72 +228,60 @@
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmDCName), '_', '-'))]",
       "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmDCName)]"
     },
-    "vmSQL": {
-      "vmImagePublisher": "MicrosoftSQLServer",
-      "vmImageOffer": "SQL2017-WS2016",
-      "vmImageSKU": "SQLDEV",
-      "vmOSDiskName": "Disk-SQL-OS",
-      "vmVmSize": "[parameters('vmSQLSize')]",
-      "vmNicName": "[concat('NIC-', variables('generalSettings').vmSQLName, '-0')]",
-      "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmSQLName)]",
-      "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmSQLName), '_', '-'))]",
-      "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmSQLName)]"
+    "vmIIS": {
+      "vmImagePublisher": "MicrosofWindowsServer",
+      "vmImageOffer": "WindowsServer",
+      "vmImageSKU": "2016-Datacenter-smalldisk",
+      "vmOSDiskName": "Disk-IIS-OS",
+      "vmVmSize": "[parameters('vmIISSize')]",
+      "vmNicName": "[concat('NIC-', variables('generalSettings').vmIISName, '-0')]",
+      "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmIISName)]",
+      "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmIISName), '_', '-'))]",
+      "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmIISName)]"
     },
-    "vmSP2013": {
-      "vmImagePublisher": "MicrosoftSharePoint",
-      "vmImageOffer": "MicrosoftSharePointServer",
-      "vmImageSKU": "sp2013",
-      "vmOSDiskName": "Disk-SP2013-OS",
-      "vmVmSize": "[parameters('vmSPSize')]",
-      "vmNicName": "[concat('NIC-', variables('generalSettings').vmSP2013Name, '-0')]",
-      "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmSP2013Name)]",
-      "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmSP2013Name), '_', '-'))]",
-      "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmSP2013Name)]"
+    "vmCARoot": {
+      "vmImagePublisher": "MicrosofWindowsServer",
+      "vmImageOffer": "WindowsServer",
+      "vmImageSKU": "2016-Datacenter-smalldisk",
+      "vmOSDiskName": "Disk-CARoot-OS",
+      "vmVmSize": "[parameters('vmCARootSize')]",
+      "vmNicName": "[concat('NIC-', variables('generalSettings').vmCARootName, '-0')]",
+      "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmCARootName)]",
+      "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmCARootName), '_', '-'))]",
+      "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmCARootName)]"
     },
-    "vmSP2016": {
-      "vmImagePublisher": "MicrosoftSharePoint",
-      "vmImageOffer": "MicrosoftSharePointServer",
-      "vmImageSKU": "sp2016",
-      "vmOSDiskName": "Disk-SP2016-OS",
-      "vmVmSize": "[parameters('vmSPSize')]",
-      "vmNicName": "[concat('NIC-', variables('generalSettings').vmSP2016Name, '-0')]",
-      "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmSP2016Name)]",
-      "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmSP2016Name), '_', '-'))]",
-      "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmSP2016Name)]"
+    "vmCAEnt": {
+      "vmImagePublisher": "MicrosofWindowsServer",
+      "vmImageOffer": "WindowsServer",
+      "vmImageSKU": "2016-Datacenter-smalldisk",
+      "vmOSDiskName": "Disk-CAEnt-OS",
+      "vmVmSize": "[parameters('vmCAEntSize')]",
+      "vmNicName": "[concat('NIC-', variables('generalSettings').vmCAEntName, '-0')]",
+      "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmCAEntName)]",
+      "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmCAEntName), '_', '-'))]",
+      "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmCAEntName)]"
     },
-    "vmSP2019": {
-      "vmImagePublisher": "MicrosoftSharePoint",
-      "vmImageOffer": "MicrosoftSharePointServer",
-      "vmImageSKU": "sp2019",
-      "vmOSDiskName": "Disk-SP2019-OS",
-      "vmVmSize": "[parameters('vmSPSize')]",
-      "vmNicName": "[concat('NIC-', variables('generalSettings').vmSP2019Name, '-0')]",
-      "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmSP2019Name)]",
-      "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmSP2019Name), '_', '-'))]",
-      "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmSP2019Name)]"
+    "vmCALinux": {
+      "vmImagePublisher": "OpenLogic",
+      "vmImageOffer": "CentOS",
+      "vmImageSKU": "8_1",
+      "vmOSDiskName": "Disk-CALinux-OS",
+      "vmVmSize": "[parameters('vmCALinuxSize')]",
+      "vmNicName": "[concat('NIC-', variables('generalSettings').vmCALinuxName, '-0')]",
+      "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmCALinuxName)]",
+      "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmCALinuxName), '_', '-'))]",
+      "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmCALinuxName)]"
     },
     "dscConfigureDCVM": {
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureDCVM.zip', parameters('_artifactsLocationSasToken'))]",
       "script": "ConfigureDCVM.ps1",
       "function": "ConfigureDCVM",
       "forceUpdateTag": "1.0"
-    },
-    "dscConfigureSQLVM": {
-      "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureSQLVM.zip', parameters('_artifactsLocationSasToken'))]",
-      "script": "ConfigureSQLVM.ps1",
-      "function": "ConfigureSQLVM",
-      "forceUpdateTag": "1.0"
-    },
-    "dscConfigureSPVM": {
-      "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureSPVM.zip', parameters('_artifactsLocationSasToken'))]",
-      "script": "ConfigureSPVM.ps1",
-      "function": "ConfigureSPVM",
-      "forceUpdateTag": "1.0"
     }
   },
   "resources": [
     {
-      "apiVersion": "2018-11-01",
+      "apiVersion": "2019-11-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('networkSettings').nsgDCVNetName]",
       "location": "[resourceGroup().location]",
@@ -274,89 +289,106 @@
         "displayName": "[variables('networkSettings').nsgDCVNetName]"
       },
       "properties": {
-        "securityRules": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').nsgRuleAllowRdpPort, json('null'))]"
+        "securityRules": "[variables('networkSettings').nsgRuleAllowRDPPort]"
       }
     },
     {
-      "apiVersion": "2018-11-01",
+      "apiVersion": "2019-11-01",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[variables('networkSettings').nsgSQLVNetName]",
+      "name": "[variables('networkSettings').nsgIISVNetName]",
       "location": "[resourceGroup().location]",
       "tags": {
-        "displayName": "[variables('networkSettings').nsgSQLVNetName]"
+        "displayName": "[variables('networkSettings').nsgIISVNetName]"
       },
       "properties": {
-        "securityRules": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').nsgRuleAllowRdpPort, json('null'))]"
+        "securityRules": [
+          "[variables('networkSettings').nsgRuleAllowRDPPort]",
+          "[variables('networkSettings').nsgRuleAllowHTTPPort]",
+          "[variables('networkSettings').nsgRuleAllowHTTPSPort]"
+        ]
       }
     },
     {
-      "apiVersion": "2018-11-01",
+      "apiVersion": "2019-11-01",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[variables('networkSettings').nsgSPVNetName]",
+      "name": "[variables('networkSettings').nsgCARootVNetName]",
       "location": "[resourceGroup().location]",
       "tags": {
-        "displayName": "[variables('networkSettings').nsgSPVNetName]"
+        "displayName": "[variables('networkSettings').nsgCARootVNetName]"
       },
       "properties": {
-        "securityRules": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').nsgRuleAllowRdpPort, json('null'))]"
+        "securityRules": "[variables('networkSettings').nsgRuleAllowRDPPort]"
       }
     },
     {
-      "name": "[variables('networkSettings').vNetPrivateName]",
+      "apiVersion": "2019-11-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('networkSettings').nsgCAEntVNetName]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "[variables('networkSettings').nsgCAEntVNetName]"
+      },
+      "properties": {
+        "securityRules": "[variables('networkSettings').nsgRuleAllowRDPPort]"
+      }
+    },
+    {
+      "apiVersion": "2019-11-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('networkSettings').nsgCALinuxVNetName]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "[variables('networkSettings').nsgCALinuxVNetName]"
+      },
+      "properties": {
+        "securityRules": "[variables('networkSettings').nsgRuleAllowSSHPort]"
+      }
+    },
+    {
+      "name": "[variables('networkSettings').vNetName]",
       "type": "Microsoft.Network/virtualNetworks",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2018-11-01",
+      "apiVersion": "2019-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgDCVNetName)]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgSQLVNetName)]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgSPVNetName)]"
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgIISVNetName)]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgCARootVNetName)]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgCAEntVNetName)]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgCALinuxVNetName)]"
       ],
       "tags": {
-        "displayName": "[variables('networkSettings').vNetPrivateName]"
+        "displayName": "[variables('networkSettings').vNetName]"
       },
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "[variables('networkSettings').vNetPrivatePrefix]"
+            "[variables('networkSettings').vNetPrefix]"
           ]
         },
         "subnets": [
           {
-            "name": "[variables('networkSettings').vNetPrivateSubnetDCName]",
+            "name": "[variables('networkSettings').vNetSubnet1Name]",
             "properties": {
-              "addressPrefix": "[variables('networkSettings').vNetPrivateSubnetDCPrefix]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgDCVNetName)]"
-              }
+              "addressPrefix": "[variables('networkSettings').vNetSubnet1Prefix]"
             }
           },
           {
-            "name": "[variables('networkSettings').vNetPrivateSubnetSQLName]",
+            "name": "[variables('networkSettings').vNetSubnet2Name]",
             "properties": {
-              "addressPrefix": "[variables('networkSettings').vNetPrivateSubnetSQLPrefix]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgSQLVNetName)]"
-              }
-            }
-          },
-          {
-            "name": "[variables('networkSettings').vNetPrivateSubnetSPName]",
-            "properties": {
-              "addressPrefix": "[variables('networkSettings').vNetPrivateSubnetSPPrefix]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgSPVNetName)]"
-              }
+              "addressPrefix": "[variables('networkSettings').vNetSubnet2Prefix]"
             }
           }
         ]
       }
     },
+
+
     {
       "condition": "[equals(parameters('addPublicIPAddressToEachVM'), 'Yes')]",
       "name": "[variables('vmDC').vmPublicIPName]",
       "type": "Microsoft.Network/publicIPAddresses",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2019-11-01",
       "tags": {
         "displayName": "[variables('vmDC').vmPublicIPName]"
       },
@@ -375,15 +407,18 @@
       "name": "[variables('vmDC').vmNicName]",
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2018-11-01",
+      "apiVersion": "2019-11-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetPrivateName)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmDC').vmPublicIPName)]"
       ],
       "tags": {
         "displayName": "[variables('vmDC').vmNicName]"
       },
       "properties": {
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgDCVNetName)]"
+        },
         "ipConfigurations": [
           {
             "name": "ipconfig1",
@@ -391,7 +426,7 @@
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[variables('vmDC').nicPrivateIPAddress]",
               "subnet": {
-                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('networkSettings').vNetPrivateName, variables('networkSettings').vNetPrivateSubnetDCName)]"
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('networkSettings').vNetName, variables('networkSettings').vNetSubnet1Name)]"
               },
               "publicIPAddress": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').vmDCPublicIPNicAssociation, json('null'))]"
             }
@@ -403,7 +438,7 @@
       "name": "[variables('generalSettings').vmDCName]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2019-07-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('vmDC').vmNicName)]"
       ],
@@ -436,7 +471,6 @@
             "caching": "ReadWrite",
             "osType": "Windows",
             "createOption": "FromImage",
-            "diskSizeGB": 128,
             "managedDisk": {
               "storageAccountType": "[variables('generalSettings').vmStorageAccountType]"
             }
@@ -455,7 +489,7 @@
           "name": "ConfigureDCVM",
           "type": "extensions",
           "location": "[resourceGroup().location]",
-          "apiVersion": "2019-03-01",
+          "apiVersion": "2019-07-01",
           "dependsOn": [
             "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
           ],
@@ -489,10 +523,6 @@
                 "AdminCreds": {
                   "UserName": "[parameters('adminUsername')]",
                   "Password": "[parameters('adminPassword')]"
-                },
-                "AdfsSvcCreds": {
-                  "UserName": "[variables('generalSettings').adfsSvcUserName]",
-                  "Password": "[variables('generalSettings').adfsSvcPassword]"
                 }
               }
             }
@@ -500,14 +530,16 @@
         }
       ]
     },
+
+
     {
       "condition": "[equals(parameters('addPublicIPAddressToEachVM'), 'Yes')]",
-      "name": "[variables('vmSQL').vmPublicIPName]",
+      "name": "[variables('vmIIS').vmPublicIPName]",
       "type": "Microsoft.Network/publicIPAddresses",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2019-11-01",
       "tags": {
-        "displayName": "[variables('vmSQL').vmPublicIPName]"
+        "displayName": "[variables('vmIIS').vmPublicIPName]"
       },
       "sku": {
         "name": "Basic",
@@ -516,54 +548,57 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[variables('vmSQL').vmPublicIPDnsName]"
+          "domainNameLabel": "[variables('vmIIS').vmPublicIPDnsName]"
         }
       }
     },
     {
-      "name": "[variables('vmSQL').vmNicName]",
+      "name": "[variables('vmIIS').vmNicName]",
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2018-11-01",
+      "apiVersion": "2019-11-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetPrivateName)]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmSQL').vmPublicIPName)]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmIIS').vmPublicIPName)]"
       ],
       "tags": {
-        "displayName": "[variables('vmSQL').vmNicName]"
+        "displayName": "[variables('vmIIS').vmNicName]"
       },
       "properties": {
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgIISVNetName)]"
+        },
         "ipConfigurations": [
           {
             "name": "ipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('networkSettings').vNetPrivateName, variables('networkSettings').vNetPrivateSubnetSQLName)]"
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('networkSettings').vNetName, variables('networkSettings').vNetSubnet1Name)]"
               },
-              "publicIPAddress": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').vmSQLPublicIPNicAssociation, json('null'))]"
+              "publicIPAddress": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').vmIISPublicIPNicAssociation, json('null'))]"
             }
           }
         ]
       }
     },
     {
-      "name": "[variables('generalSettings').vmSQLName]",
+      "name": "[variables('generalSettings').vmIISName]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2019-07-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmSQL').vmNicName)]"
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmIIS').vmNicName)]"
       ],
       "tags": {
-        "displayName": "[variables('generalSettings').vmSQLName]"
+        "displayName": "[variables('generalSettings').vmIISName]"
       },
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[variables('vmSQL').vmVmSize]"
+          "vmSize": "[variables('vmIIS').vmVmSize]"
         },
         "osProfile": {
-          "computerName": "[variables('generalSettings').vmSQLName]",
+          "computerName": "[variables('generalSettings').vmIISName]",
           "adminUsername": "[parameters('adminUserName')]",
           "adminPassword": "[parameters('adminPassword')]",
           "windowsConfiguration": {
@@ -574,17 +609,16 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[variables('vmSQL').vmImagePublisher]",
-            "offer": "[variables('vmSQL').vmImageOffer]",
-            "sku": "[variables('vmSQL').vmImageSKU]",
+            "publisher": "[variables('vmIIS').vmImagePublisher]",
+            "offer": "[variables('vmIIS').vmImageOffer]",
+            "sku": "[variables('vmIIS').vmImageSKU]",
             "version": "latest"
           },
           "osDisk": {
-            "name": "[variables('vmSQL').vmOSDiskName]",
+            "name": "[variables('vmIIS').vmOSDiskName]",
             "caching": "ReadWrite",
             "osType": "Windows",
             "createOption": "FromImage",
-            "diskSizeGB": 128,
             "managedDisk": {
               "storageAccountType": "[variables('generalSettings').vmStorageAccountType]"
             }
@@ -593,73 +627,228 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmSQL').vmNicName)]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmIIS').vmNicName)]"
             }
           ]
         }
-      },
-      "resources": []
+      }
     },
+
+
     {
-      "name": "[concat(variables('generalSettings').vmSQLName, '/ConfigureSQLVM')]",
-      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "condition": "[equals(parameters('addPublicIPAddressToEachVM'), 'Yes')]",
+      "name": "[variables('vmCARoot').vmPublicIPName]",
+      "type": "Microsoft.Network/publicIPAddresses",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2019-03-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('generalSettings').vmDCName, 'ConfigureDCVM')]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmSQLName)]"
-      ],
+      "apiVersion": "2019-11-01",
       "tags": {
-        "displayName": "[concat(variables('generalSettings').vmSQLName, '/ConfigureSQLVM')]"
+        "displayName": "[variables('vmCARoot').vmPublicIPName]"
+      },
+      "sku": {
+        "name": "Basic",
+        "tier": "Regional"
       },
       "properties": {
-        "publisher": "Microsoft.Powershell",
-        "type": "DSC",
-        "typeHandlerVersion": "2.9",
-        "autoUpgradeMinorVersion": true,
-        "forceUpdateTag": "[variables('dscConfigureSQLVM').forceUpdateTag]",
-        "settings": {
-          "wmfVersion": "latest",
-          "configuration": {
-            "url": "[variables('dscConfigureSQLVM').scriptFileUri]",
-            "script": "[variables('dscConfigureSQLVM').script]",
-            "function": "[variables('dscConfigureSQLVM').function]"
-          },
-          "configurationArguments": {
-            "DNSServer": "[variables('vmDC').nicPrivateIPAddress]",
-            "DomainFQDN": "[parameters('domainFQDN')]"
-          },
-          "privacy": {
-            "dataCollection": "enable"
-          }
-        },
-        "protectedSettings": {
-          "configurationArguments": {
-            "DomainAdminCreds": {
-              "UserName": "[parameters('adminUsername')]",
-              "Password": "[parameters('adminPassword')]"
-            },
-            "SqlSvcCreds": {
-              "UserName": "[variables('generalSettings').sqlSvcUserName]",
-              "Password": "[variables('generalSettings').sqlSvcPassword]"
-            },
-            "SPSetupCreds": {
-              "UserName": "[variables('generalSettings').spSetupUserName]",
-              "Password": "[variables('generalSettings').spSetupPassword]"
-            }
-          }
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('vmCARoot').vmPublicIPDnsName]"
         }
       }
     },
+    {
+      "name": "[variables('vmCARoot').vmNicName]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCARoot').vmPublicIPName)]"
+      ],
+      "tags": {
+        "displayName": "[variables('vmCARoot').vmNicName]"
+      },
+      "properties": {
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgCARootVNetName)]"
+        },
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('networkSettings').vNetName, variables('networkSettings').vNetSubnet1Name)]"
+              },
+              "publicIPAddress": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').vmCARootPublicIPNicAssociation, json('null'))]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('generalSettings').vmCARootName]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-07-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCARoot').vmNicName)]"
+      ],
+      "tags": {
+        "displayName": "[variables('generalSettings').vmCARootName]"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmCARoot').vmVmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('generalSettings').vmCARootName]",
+          "adminUsername": "[parameters('adminUserName')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "windowsConfiguration": {
+            "timeZone": "[parameters('vmsTimeZone')]",
+            "enableAutomaticUpdates": "[if(equals(parameters('enableAutomaticUpdates'), 'Yes'), 'true', 'false')]",
+            "provisionVMAgent": true
+          }
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmCARoot').vmImagePublisher]",
+            "offer": "[variables('vmCARoot').vmImageOffer]",
+            "sku": "[variables('vmCARoot').vmImageSKU]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[variables('vmCARoot').vmOSDiskName]",
+            "caching": "ReadWrite",
+            "osType": "Windows",
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "[variables('generalSettings').vmStorageAccountType]"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCARoot').vmNicName)]"
+            }
+          ]
+        }
+      }
+    },
+
+
+    {
+      "condition": "[equals(parameters('addPublicIPAddressToEachVM'), 'Yes')]",
+      "name": "[variables('vmCAEnt').vmPublicIPName]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-11-01",
+      "tags": {
+        "displayName": "[variables('vmCAEnt').vmPublicIPName]"
+      },
+      "sku": {
+        "name": "Basic",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('vmCAEnt').vmPublicIPDnsName]"
+        }
+      }
+    },
+    {
+      "name": "[variables('vmCAEnt').vmNicName]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCAEnt').vmPublicIPName)]"
+      ],
+      "tags": {
+        "displayName": "[variables('vmCAEnt').vmNicName]"
+      },
+      "properties": {
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgCAEntVNetName)]"
+        },
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('networkSettings').vNetName, variables('networkSettings').vNetSubnet1Name)]"
+              },
+              "publicIPAddress": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').vmCAEntPublicIPNicAssociation, json('null'))]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('generalSettings').vmCAEntName]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-07-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCAEnt').vmNicName)]"
+      ],
+      "tags": {
+        "displayName": "[variables('generalSettings').vmCAEntName]"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmCAEnt').vmVmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('generalSettings').vmCAEntName]",
+          "adminUsername": "[parameters('adminUserName')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "windowsConfiguration": {
+            "timeZone": "[parameters('vmsTimeZone')]",
+            "enableAutomaticUpdates": "[if(equals(parameters('enableAutomaticUpdates'), 'Yes'), 'true', 'false')]",
+            "provisionVMAgent": true
+          }
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmCAEnt').vmImagePublisher]",
+            "offer": "[variables('vmCAEnt').vmImageOffer]",
+            "sku": "[variables('vmCAEnt').vmImageSKU]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[variables('vmCAEnt').vmOSDiskName]",
+            "caching": "ReadWrite",
+            "osType": "Windows",
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "[variables('generalSettings').vmStorageAccountType]"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCAEnt').vmNicName)]"
+            }
+          ]
+        }
+      }
+    },
+
+
     {
       "condition": "[and(equals(parameters('provisionLinux'), 'Yes'), equals(parameters('addPublicIPAddressToEachVM'), 'Yes'))]",
-      "name": "[variables('vmSP2019').vmPublicIPName]",
+      "name": "[variables('vmCALinux').vmPublicIPName]",
       "type": "Microsoft.Network/publicIPAddresses",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2019-11-01",
       "tags": {
-        "displayName": "[variables('vmSP2019').vmPublicIPName]"
+        "displayName": "[variables('vmCALinux').vmPublicIPName]"
       },
       "sku": {
         "name": "Basic",
@@ -668,33 +857,36 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[variables('vmSP2019').vmPublicIPDnsName]"
+          "domainNameLabel": "[variables('vmCALinux').vmPublicIPDnsName]"
         }
       }
     },
     {
       "condition": "[equals(parameters('provisionLinux'), 'Yes')]",
-      "name": "[variables('vmSP2019').vmNicName]",
+      "name": "[variables('vmCALinux').vmNicName]",
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2018-11-01",
+      "apiVersion": "2019-11-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetPrivateName)]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmSP2019').vmPublicIPName)]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCALinux').vmPublicIPName)]"
       ],
       "tags": {
-        "displayName": "[variables('vmSP2019').vmNicName]"
+        "displayName": "[variables('vmCALinux').vmNicName]"
       },
       "properties": {
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgCALinuxVNetName)]"
+        },
         "ipConfigurations": [
           {
             "name": "ipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('networkSettings').vNetPrivateName, variables('networkSettings').vNetPrivateSubnetSPName)]"
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('networkSettings').vNetName, variables('networkSettings').vNetSubnet1Name)]"
               },
-              "publicIPAddress": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').vmSP2019PublicIPNicAssociation, json('null'))]"
+              "publicIPAddress": "[if(equals(parameters('addPublicIPAddressToEachVM'), 'Yes'), variables('networkSettings').vmCALinuxPublicIPNicAssociation, json('null'))]"
             }
           }
         ]
@@ -702,43 +894,41 @@
     },
     {
       "condition": "[equals(parameters('provisionLinux'), 'Yes')]",
-      "name": "[variables('generalSettings').vmSP2019Name]",
+      "name": "[variables('generalSettings').vmCALinuxName]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2019-07-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmSP2019').vmNicName)]"
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCALinux').vmNicName)]"
       ],
       "tags": {
-        "displayName": "[variables('generalSettings').vmSP2019Name]"
+        "displayName": "[variables('generalSettings').vmCALinuxName]"
       },
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[variables('vmSP2019').vmVmSize]"
+          "vmSize": "[variables('vmCALinux').vmVmSize]"
         },
         "osProfile": {
-          "computerName": "[variables('generalSettings').vmSP2019Name]",
+          "computerName": "[variables('generalSettings').vmCALinuxName]",
           "adminUsername": "[parameters('adminUserName')]",
           "adminPassword": "[parameters('adminPassword')]",
-          "windowsConfiguration": {
-            "timeZone": "[parameters('vmsTimeZone')]",
-            "enableAutomaticUpdates": "[if(equals(parameters('enableAutomaticUpdates'), 'Yes'), 'true', 'false')]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": false,
             "provisionVMAgent": true
           }
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[variables('vmSP2019').vmImagePublisher]",
-            "offer": "[variables('vmSP2019').vmImageOffer]",
-            "sku": "[variables('vmSP2019').vmImageSKU]",
+            "publisher": "[variables('vmCALinux').vmImagePublisher]",
+            "offer": "[variables('vmCALinux').vmImageOffer]",
+            "sku": "[variables('vmCALinux').vmImageSKU]",
             "version": "latest"
           },
           "osDisk": {
-            "name": "[variables('vmSP2019').vmOSDiskName]",
+            "name": "[variables('vmCALinux').vmOSDiskName]",
             "caching": "ReadWrite",
-            "osType": "Windows",
+            "osType": "Linux",
             "createOption": "FromImage",
-            "diskSizeGB": 128,
             "managedDisk": {
               "storageAccountType": "[variables('generalSettings').vmStorageAccountType]"
             }
@@ -747,79 +937,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmSP2019').vmNicName)]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCALinux').vmNicName)]"
             }
           ]
-        }
-      },
-      "resources": []
-    },
-    {
-      "condition": "[equals(parameters('provisionLinux'), 'Yes')]",
-      "name": "[concat(variables('generalSettings').vmSP2019Name, '/ConfigureSPVM')]",
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2019-03-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('generalSettings').vmDCName, 'ConfigureDCVM')]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmSP2019Name)]"
-      ],
-      "tags": {
-        "displayName": "[concat(variables('generalSettings').vmSP2019Name, '/ConfigureSPVM')]"
-      },
-      "properties": {
-        "publisher": "Microsoft.Powershell",
-        "type": "DSC",
-        "typeHandlerVersion": "2.9",
-        "autoUpgradeMinorVersion": true,
-        "forceUpdateTag": "[variables('dscConfigureSPVM').forceUpdateTag]",
-        "settings": {
-          "wmfVersion": "latest",
-          "configuration": {
-            "url": "[variables('dscConfigureSPVM').scriptFileUri]",
-            "script": "[variables('dscConfigureSPVM').script]",
-            "function": "[variables('dscConfigureSPVM').function]"
-          },
-          "configurationArguments": {
-            "DNSServer": "[variables('vmDC').nicPrivateIPAddress]",
-            "DomainFQDN": "[parameters('domainFQDN')]",
-            "DCName": "[variables('generalSettings').vmDCName]",
-            "SQLName": "[variables('generalSettings').vmSQLName]",
-            "SQLAlias": "[variables('generalSettings').sqlAlias]",
-            "SharePointVersion": "2019",
-            "ConfigureADFS": "0"
-          },
-          "privacy": {
-            "dataCollection": "enable"
-          }
-        },
-        "protectedSettings": {
-          "configurationArguments": {
-            "DomainAdminCreds": {
-              "UserName": "[parameters('adminUsername')]",
-              "Password": "[parameters('adminPassword')]"
-            },
-            "SPSetupCreds": {
-              "UserName": "[variables('generalSettings').spSetupUserName]",
-              "Password": "[variables('generalSettings').spSetupPassword]"
-            },
-            "SPFarmCreds": {
-              "UserName": "[variables('generalSettings').spFarmUserName]",
-              "Password": "[variables('generalSettings').spFarmPassword]"
-            },
-            "SPAppPoolCreds": {
-              "UserName": "[variables('generalSettings').spAppPoolUserName]",
-              "Password": "[variables('generalSettings').spAppPoolPassword]"
-            },
-            "SPPassphraseCreds": {
-              "UserName": "Passphrase",
-              "Password": "[variables('generalSettings').spPassphrase]"
-            }
-          }
         }
       }
     }
+
   ],
   "outputs": {
     "EnvironmentLocation": {
