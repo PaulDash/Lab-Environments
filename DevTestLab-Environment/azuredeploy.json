@@ -553,8 +553,7 @@
               },
               "configurationArguments": {
                 "domainFQDN": "[parameters('domainFQDN')]",
-                "PrivateIP": "[variables('vmDC').nicPrivateIPAddress]",
-                "ConfigureADFS": "0"
+                "PrivateIP": "[variables('vmDC').nicPrivateIPAddress]"
               },
               "privacy": {
                 "dataCollection": "enable"
