@@ -302,9 +302,9 @@
       },
       "properties": {
         "securityRules": [
-          "[variables('networkSettings').nsgRuleAllowRDPPort]",
-          "[variables('networkSettings').nsgRuleAllowHTTPPort]",
-          "[variables('networkSettings').nsgRuleAllowHTTPSPort]"
+          "[concat(variables('networkSettings').nsgRuleAllowRDPPort,
+                  variables('networkSettings').nsgRuleAllowHTTPPort,
+                  variables('networkSettings').nsgRuleAllowHTTPSPort)]"
         ]
       }
     },
@@ -344,6 +344,8 @@
         "securityRules": "[variables('networkSettings').nsgRuleAllowSSHPort]"
       }
     },
+
+
     {
       "name": "[variables('networkSettings').vNetName]",
       "type": "Microsoft.Network/virtualNetworks",
