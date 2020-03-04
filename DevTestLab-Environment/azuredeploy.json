@@ -169,7 +169,7 @@
       ],
       "nsgRuleAllowSSHPort": [
         {
-          "name": "allow-rdp-rule",
+          "name": "allow-ssh-rule",
           "properties": {
             "description": "Allow SSH",
             "protocol": "Tcp",
@@ -185,7 +185,7 @@
       ],
       "nsgRuleAllowHTTPPort": [
         {
-          "name": "allow-rdp-rule",
+          "name": "allow-http-rule",
           "properties": {
             "description": "Allow HTTP",
             "protocol": "Tcp",
@@ -201,7 +201,7 @@
       ],
       "nsgRuleAllowHTTPSPort": [
         {
-          "name": "allow-rdp-rule",
+          "name": "allow-https-rule",
           "properties": {
             "description": "Allow HTTPS",
             "protocol": "Tcp",
@@ -317,7 +317,7 @@
             }
           },
           {
-            "name": "allow-rdp-rule",
+            "name": "allow-http-rule",
             "properties": {
               "description": "Allow HTTP",
               "protocol": "Tcp",
@@ -331,7 +331,7 @@
             }
           },
           {
-            "name": "allow-rdp-rule",
+            "name": "allow-https-rule",
             "properties": {
               "description": "Allow HTTPS",
               "protocol": "Tcp",
