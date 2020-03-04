@@ -178,7 +178,7 @@
             "sourceAddressPrefix": "Internet",
             "destinationAddressPrefix": "*",
             "access": "Allow",
-            "priority": 100,
+            "priority": 110,
             "direction": "Inbound"
           }
         }
@@ -194,7 +194,7 @@
             "sourceAddressPrefix": "Internet",
             "destinationAddressPrefix": "*",
             "access": "Allow",
-            "priority": 100,
+            "priority": 120,
             "direction": "Inbound"
           }
         }
@@ -210,7 +210,7 @@
             "sourceAddressPrefix": "Internet",
             "destinationAddressPrefix": "*",
             "access": "Allow",
-            "priority": 100,
+            "priority": 130,
             "direction": "Inbound"
           }
         }
@@ -326,7 +326,7 @@
               "sourceAddressPrefix": "Internet",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 100,
+              "priority": 120,
               "direction": "Inbound"
             }
           },
@@ -340,7 +340,7 @@
               "sourceAddressPrefix": "Internet",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 100,
+              "priority": 130,
               "direction": "Inbound"
             }
           }
