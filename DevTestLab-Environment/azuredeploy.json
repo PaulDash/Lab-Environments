@@ -223,13 +223,13 @@
       "vmOSDiskName": "Disk-DC-OS",
       "vmVmSize": "[parameters('vmDCSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmDCName, '-0')]",
-      "nicPrivateIPAddress": "10.0.1.4",
+      "nicPrivateIPAddress": "10.20.1.4",
       "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmDCName)]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmDCName), '_', '-'))]",
       "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmDCName)]"
     },
     "vmIIS": {
-      "vmImagePublisher": "MicrosofWindowsServer",
+      "vmImagePublisher": "MicrosoftWindowsServer",
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2016-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-IIS-OS",
@@ -240,7 +240,7 @@
       "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmIISName)]"
     },
     "vmCARoot": {
-      "vmImagePublisher": "MicrosofWindowsServer",
+      "vmImagePublisher": "MicrosoftWindowsServer",
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2016-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-CARoot-OS",
@@ -251,7 +251,7 @@
       "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmCARootName)]"
     },
     "vmCAEnt": {
-      "vmImagePublisher": "MicrosofWindowsServer",
+      "vmImagePublisher": "MicrosoftWindowsServer",
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2016-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-CAEnt-OS",
