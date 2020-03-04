@@ -223,7 +223,7 @@
       "vmOSDiskName": "Disk-DC-OS",
       "vmVmSize": "[parameters('vmDCSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmDCName, '-0')]",
-      "nicPrivateIPAddress": "10.20.1.4",
+      "nicPrivateIPAddress": "10.20.1.20",
       "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmDCName)]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmDCName), '_', '-'))]",
       "shutdownResourceName": "[concat('shutdown-computevm-', variables('generalSettings').vmDCName)]"
@@ -601,7 +601,8 @@
       "apiVersion": "2019-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmIIS').vmPublicIPName)]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmIIS').vmPublicIPName)]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
       ],
       "tags": {
         "displayName": "[variables('vmIIS').vmNicName]"
@@ -807,7 +808,8 @@
       "apiVersion": "2019-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCAEnt').vmPublicIPName)]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCAEnt').vmPublicIPName)]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
       ],
       "tags": {
         "displayName": "[variables('vmCAEnt').vmNicName]"
