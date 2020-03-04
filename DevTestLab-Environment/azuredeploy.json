@@ -302,9 +302,7 @@
       },
       "properties": {
         "securityRules": [
-          "[concat(variables('networkSettings').nsgRuleAllowRDPPort,
-                  variables('networkSettings').nsgRuleAllowHTTPPort,
-                  variables('networkSettings').nsgRuleAllowHTTPSPort)]"
+          "[concat(variables('networkSettings').nsgRuleAllowRDPPort,variables('networkSettings').nsgRuleAllowHTTPPort,variables('networkSettings').nsgRuleAllowHTTPSPort)]"
         ]
       }
     },
