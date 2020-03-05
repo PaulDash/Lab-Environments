@@ -1,0 +1,7 @@
+{
+  "itemDisplayName": "Mastering PKI Lab",
+  "description": "This template deploys a lab environment for the Mastering PKI course. This includes four Windows and (optionally) one Linux VMs. There's a AD DC, a stand-alone root CA, an Enterprise CA, and a workstation. The optional Linux has OpenSSL and nginx.",
+  "summary": "This template deploys a lab environment for the Mastering PKI course. This includes a number of Windows and (optionally) Linux VMs.",
+  "githubUsername": "PaulDash",
+  "dateUpdated": "2020-03-02"
+}
