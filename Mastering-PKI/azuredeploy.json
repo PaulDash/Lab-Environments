@@ -277,6 +277,12 @@
       "script": "ConfigureDCVM.ps1",
       "function": "ConfigureDCVM",
       "forceUpdateTag": "1.0"
+    },
+    "dscConfigureIISVM": {
+      "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureIISVM.zip', parameters('_artifactsLocationSasToken'))]",
+      "script": "ConfigureIISVM.ps1",
+      "function": "ConfigureIISVM",
+      "forceUpdateTag": "1.0"
     }
   },
   "resources": [
@@ -672,6 +678,50 @@
               "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmIIS').vmNicName)]"
             }
           ]
+        }
+      }
+    },
+    {
+      "name": "[concat(variables('generalSettings').vmIISName, '/ConfigureIISVM')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-07-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('generalSettings').vmDCName, 'ConfigureDCVM')]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmIISName)]"
+      ],
+      "tags": {
+        "displayName": "[concat(variables('generalSettings').vmIISName, '/ConfigureIISVM')]"
+      },
+      "properties": {
+        "publisher": "Microsoft.Powershell",
+        "type": "DSC",
+        "typeHandlerVersion": "2.9",
+        "autoUpgradeMinorVersion": true,
+        "forceUpdateTag": "[variables('dscConfigureIISVM').forceUpdateTag]",
+        "settings": {
+          "wmfVersion": "latest",
+          "configuration": {
+            "url": "[variables('dscConfigureIISVM').scriptFileUri]",
+            "script": "[variables('dscConfigureIISVM').script]",
+            "function": "[variables('dscConfigureIISVM').function]"
+          },
+          "configurationArguments": {
+            "DNSServer": "[variables('vmDC').nicPrivateIPAddress]",
+            "DomainFQDN": "[parameters('domainFQDN')]"
+          },
+          "privacy": {
+            "dataCollection": "enable"
+          }
+        },
+        "protectedSettings": {
+          "configurationArguments": {
+            "DomainAdminCreds": {
+              "UserName": "[parameters('adminUsername')]",
+              "Password": "[parameters('adminPassword')]"
+            }
+          }
         }
       }
     },
