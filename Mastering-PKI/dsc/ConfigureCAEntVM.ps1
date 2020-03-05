@@ -1,4 +1,4 @@
-configuration ConfigureIISVM {
+configuration ConfigureCAEntVM {
     param (
         [Parameter(Mandatory)] [String]$DNSServer,
         [Parameter(Mandatory)] [String]$DomainFQDN,
@@ -48,29 +48,6 @@ configuration ConfigureIISVM {
             Name = "RebootServer"
             DependsOn = "[Computer]DomainJoin"
         }
-                
-        WindowsFeature IIS {
-            Ensure = 'Present'
-            Name = 'Web-Server'
-            DependsOn = "[PendingReboot]Reboot1"
-        }
-
-        WindowsFeature IISConsole {
-            Ensure = 'Present'
-            Name = 'Web-Mgmt-Console'
-            DependsOn = '[WindowsFeature]IIS'
-        }
-        WindowsFeature IISScriptingTools {
-            Ensure = 'Present'
-            Name = 'Web-Scripting-Tools'
-            DependsOn = '[WindowsFeature]IIS'
-        }
-        WindowsFeature AspNet {
-            Ensure = 'Present'
-            Name = 'Web-Asp-Net45'
-            DependsOn = @('[WindowsFeature]IIS')
-        }
-
 
     }
 }
