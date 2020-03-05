@@ -80,6 +80,33 @@
             DependsOn = "[PendingReboot]Reboot1"
         }
 
+        # Create users
+        xADUser CreateADUser1
+        {
+            DomainAdministratorCredential = $DomainCredsNetbios
+            DomainName                    = $DomainFQDN
+            UserName                      = "John"
+            GivenName                     = "John"
+            Surname                       = "Smith"
+            Password                      = $Admincreds
+            PasswordNeverExpires          = $true
+            Ensure                        = "Present"
+            DependsOn                     = "[PendingReboot]Reboot1"
+        }
+
+        xADUser CreateADUser2
+        {
+            DomainAdministratorCredential = $DomainCredsNetbios
+            DomainName                    = $DomainFQDN
+            UserName                      = "Jane"
+            GivenName                     = "Jane"
+            Surname                       = "Doe"
+            Password                      = $Admincreds
+            PasswordNeverExpires          = $true
+            Ensure                        = "Present"
+            DependsOn                     = "[PendingReboot]Reboot1"
+        }
+
         WindowsFeature AddADFeature2    { Name = "RSAT-ADDS-Tools";     Ensure = "Present"; DependsOn = "[PendingReboot]Reboot1" }
 
 
