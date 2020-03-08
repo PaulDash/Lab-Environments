@@ -15,7 +15,7 @@
     },
     "domainFQDN": {
       "type": "string",
-      "defaultValue": "ad.graydaycafe.com",
+      "defaultValue": "lab.graydaycafe.com",
       "minLength": 5,
       "metadata": {
         "description": "FQDN of the AD forest to create."
@@ -119,7 +119,7 @@
     "generalSettings": {
       "vmDCName":      "DC",
       "vmCARootName":  "CA-Root",
-      "vmCAEntName":   "CA-Ent",
+      "vmCAEntName":   "CA",
       "vmIISName":     "IIS",
       "vmCALinuxName": "CA-Linux",
       "vmStorageAccountType": "Standard_LRS"
