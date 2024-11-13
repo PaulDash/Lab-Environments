@@ -541,7 +541,7 @@
       },
       "resources": [
         {
-          "name": "ConfigureDCVM",
+          "name": "[concat(variables('generalSettings').vmDCName, '/ConfigureDCVM')]",
           "type": "Microsoft.Compute/virtualMachines/extensions",
           "location": "[resourceGroup().location]",
           "apiVersion": "2019-07-01",
@@ -892,7 +892,7 @@
       "apiVersion": "2019-07-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCAEnt').vmNicName)]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmDC').vmPublicIPName)]"
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
       ],
       "tags": {
         "displayName": "[variables('generalSettings').vmCAEntName]"
