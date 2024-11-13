@@ -385,6 +385,7 @@
       }
     },
     {
+      "condition": "[equals(parameters('provisionLinux'), 'Yes')]",
       "apiVersion": "2019-11-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('networkSettings').nsgCALinuxVNetName]",
