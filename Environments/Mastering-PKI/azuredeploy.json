@@ -35,41 +35,6 @@
         "description": "Input must meet password complexity requirements as documented for property 'adminPassword' in https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-create-or-update"
       }
     },
-    "vmDCSize": {
-      "type": "string",
-      "defaultValue": "Standard_F2s_v2",
-      "metadata": {
-        "description": "Size of the DC VM"
-      }
-    },
-    "vmCARootSize": {
-      "type": "string",
-      "defaultValue": "Standard_F2s_v2",
-      "metadata": {
-        "description": "Size of the Root CA VM"
-      }
-    },
-    "vmCAEntSize": {
-      "type": "string",
-      "defaultValue": "Standard_F4s_v2",
-      "metadata": {
-        "description": "Size of the Enterprise CA VM"
-      }
-    },
-    "vmIISSize": {
-      "type": "string",
-      "defaultValue": "Standard_B2ms",
-      "metadata": {
-        "description": "Size of the IIS VM"
-      }
-    },
-    "vmCALinuxSize": {
-      "type": "string",
-      "defaultValue": "Standard_B1ms",
-      "metadata": {
-        "description": "Size of the Linux VM"
-      }
-    },
     "vmsTimeZone": {
       "type": "string",
       "defaultValue": "Central Europe Standard Time",
@@ -124,6 +89,18 @@
       "vmCALinuxName": "CA-Linux",
       "vmStorageAccountType": "Standard_LRS"
     },
+        "vmDCSize": {
+      "type": "string",
+      "defaultValue": "Standard_F2s_v2",
+      "metadata": {
+        "description": "Size of the DC VM"
+      }
+    },
+    "vmCARootSize":   "Standard_F2s_v2",
+    "vmCAEntSize":    "Standard_F4s_v2",
+    "vmIISSize":      "Standard_B2ms",
+    "vmCALinuxSize":  "Standard_B1ms",
+    
     "networkSettings": {
       "vNetName":   "[concat(resourceGroup().name, '-vnet')]",
       "vNetPrefix": "10.20.0.0/16",
@@ -221,7 +198,7 @@
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2019-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-DC-OS",
-      "vmVmSize": "[parameters('vmDCSize')]",
+      "vmVmSize": "[variables('vmDCSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmDCName, '-0')]",
       "nicPrivateIPAddress": "10.20.1.20",
       "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmDCName)]",
@@ -233,7 +210,7 @@
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2016-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-IIS-OS",
-      "vmVmSize": "[parameters('vmIISSize')]",
+      "vmVmSize": "[variables('vmIISSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmIISName, '-0')]",
       "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmIISName)]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmIISName), '_', '-'))]",
@@ -244,7 +221,7 @@
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2016-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-CARoot-OS",
-      "vmVmSize": "[parameters('vmCARootSize')]",
+      "vmVmSize": "[variables('vmCARootSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmCARootName, '-0')]",
       "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmCARootName)]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmCARootName), '_', '-'))]",
@@ -255,7 +232,7 @@
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2016-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-CAEnt-OS",
-      "vmVmSize": "[parameters('vmCAEntSize')]",
+      "vmVmSize": "[variables('vmCAEntSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmCAEntName, '-0')]",
       "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmCAEntName)]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmCAEntName), '_', '-'))]",
@@ -266,7 +243,7 @@
       "vmImageOffer": "CentOS",
       "vmImageSKU": "8_1",
       "vmOSDiskName": "Disk-CALinux-OS",
-      "vmVmSize": "[parameters('vmCALinuxSize')]",
+      "vmVmSize": "[variables('vmCALinuxSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmCALinuxName, '-0')]",
       "vmPublicIPName": "[concat('PublicIP-', variables('generalSettings').vmCALinuxName)]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-', variables('generalSettings').vmCALinuxName), '_', '-'))]",
