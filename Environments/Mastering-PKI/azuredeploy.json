@@ -283,6 +283,12 @@
       "script": "ConfigureIISVM.ps1",
       "function": "ConfigureIISVM",
       "forceUpdateTag": "1.0"
+    },
+    "dscConfigureCAEntVM": {
+      "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureCAEntVM.zip', parameters('_artifactsLocationSasToken'))]",
+      "script": "ConfigureCAEntVM.ps1",
+      "function": "ConfigureCAEntVM",
+      "forceUpdateTag": "1.0"
     }
   },
   "resources": [
@@ -950,13 +956,13 @@
         "type": "DSC",
         "typeHandlerVersion": "2.9",
         "autoUpgradeMinorVersion": true,
-        "forceUpdateTag": "[variables('dscConfigureIISVM').forceUpdateTag]",
+        "forceUpdateTag": "[variables('dscConfigureCAEntVM').forceUpdateTag]",
         "settings": {
           "wmfVersion": "latest",
           "configuration": {
-            "url": "[variables('dscConfigureIISVM').scriptFileUri]",
-            "script": "[variables('dscConfigureIISVM').script]",
-            "function": "[variables('dscConfigureIISVM').function]"
+            "url": "[variables('dscConfigureCAEntVM').scriptFileUri]",
+            "script": "[variables('dscConfigureCAEntVM').script]",
+            "function": "[variables('dscConfigureCAEntVM').function]"
           },
           "configurationArguments": {
             "DNSServer": "[variables('vmDC').nicPrivateIPAddress]",
