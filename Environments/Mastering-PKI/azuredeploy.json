@@ -542,7 +542,7 @@
       "resources": [
         {
           "name": "ConfigureDCVM",
-          "type": "extensions",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
           "location": "[resourceGroup().location]",
           "apiVersion": "2019-07-01",
           "dependsOn": [
@@ -613,8 +613,7 @@
       "apiVersion": "2019-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmIIS').vmPublicIPName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmIIS').vmPublicIPName)]"        
       ],
       "tags": {
         "displayName": "[variables('vmIIS').vmNicName]"
@@ -643,7 +642,8 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2019-07-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmIIS').vmNicName)]"
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmIIS').vmNicName)]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
       ],
       "tags": {
         "displayName": "[variables('generalSettings').vmIISName]"
@@ -694,8 +694,6 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2019-07-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('generalSettings').vmDCName, 'ConfigureDCVM')]",
         "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmIISName)]"
       ],
       "tags": {
@@ -864,8 +862,7 @@
       "apiVersion": "2019-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCAEnt').vmPublicIPName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCAEnt').vmPublicIPName)]"
       ],
       "tags": {
         "displayName": "[variables('vmCAEnt').vmNicName]"
@@ -894,7 +891,8 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2019-07-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCAEnt').vmNicName)]"
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCAEnt').vmNicName)]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmDC').vmPublicIPName)]"
       ],
       "tags": {
         "displayName": "[variables('generalSettings').vmCAEntName]"
@@ -945,8 +943,6 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2019-07-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('generalSettings').vmDCName, 'ConfigureDCVM')]",
         "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmCAEntName)]"
       ],
       "tags": {
