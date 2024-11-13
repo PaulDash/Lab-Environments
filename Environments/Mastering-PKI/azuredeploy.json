@@ -208,7 +208,7 @@
     "vmIIS": {
       "vmImagePublisher": "MicrosoftWindowsServer",
       "vmImageOffer": "WindowsServer",
-      "vmImageSKU": "2016-Datacenter-smalldisk",
+      "vmImageSKU": "2019-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-IIS-OS",
       "vmVmSize": "[variables('vmIISSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmIISName, '-0')]",
@@ -219,7 +219,7 @@
     "vmCARoot": {
       "vmImagePublisher": "MicrosoftWindowsServer",
       "vmImageOffer": "WindowsServer",
-      "vmImageSKU": "2016-Datacenter-smalldisk",
+      "vmImageSKU": "2019-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-CARoot-OS",
       "vmVmSize": "[variables('vmCARootSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmCARootName, '-0')]",
@@ -230,7 +230,7 @@
     "vmCAEnt": {
       "vmImagePublisher": "MicrosoftWindowsServer",
       "vmImageOffer": "WindowsServer",
-      "vmImageSKU": "2016-Datacenter-smalldisk",
+      "vmImageSKU": "2019-Datacenter-smalldisk",
       "vmOSDiskName": "Disk-CAEnt-OS",
       "vmVmSize": "[variables('vmCAEntSize')]",
       "vmNicName": "[concat('NIC-', variables('generalSettings').vmCAEntName, '-0')]",
