@@ -88,14 +88,8 @@
       "vmIISName":     "IIS",
       "vmCALinuxName": "CA-Linux",
       "vmStorageAccountType": "Standard_LRS"
-    },
-        "vmDCSize": {
-      "type": "string",
-      "defaultValue": "Standard_F2s_v2",
-      "metadata": {
-        "description": "Size of the DC VM"
-      }
-    },
+      },
+    "vmDCSize":       "Standard_F2s_v2",
     "vmCARootSize":   "Standard_F2s_v2",
     "vmCAEntSize":    "Standard_F4s_v2",
     "vmIISSize":      "Standard_B2ms",
