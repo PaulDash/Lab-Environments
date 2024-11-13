@@ -1,1 +1,0 @@
-{"Modules":["xActiveDirectory","NetworkingDsc","xPSDesiredStateConfiguration","ActiveDirectoryCSDsc","CertificateDsc","xDnsServer","ComputerManagementDsc"]}
