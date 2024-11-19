@@ -82,7 +82,7 @@
   },
   "variables": {
     "generalSettings": {
-      "vmDCName":      "DC",
+      "vmDCName":      "DC-Ent",
       "vmCARootName":  "CA-Root",
       "vmCAEntName":   "CA",
       "vmIISName":     "IIS",
