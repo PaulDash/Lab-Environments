@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
+  "contentVersion": "1.2.0.0",
   "parameters": {
     "provisionLinux": {
       "type": "string",
@@ -82,9 +82,9 @@
   },
   "variables": {
     "generalSettings": {
-      "vmDCName": "DC-Ent",
+      "vmDCName": "DC",
       "vmCARootName": "CA-Root",
-      "vmCAEntName": "CA",
+      "vmCAEntName": "CA-Ent",
       "vmIISName": "IIS",
       "vmCALinuxName": "CA-Linux",
       "vmStorageAccountType": "StandardSSD_LRS"
@@ -276,7 +276,7 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "3389",
-              "sourceAddressPrefix": "1.2.4.0/8",
+              "sourceAddressPrefix": "1.2.4.0/24",
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "priority": 100,
@@ -290,7 +290,7 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "80",
-              "sourceAddressPrefix": "1.2.4.0/8",
+              "sourceAddressPrefix": "1.2.4.0/24",
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "priority": 120,
@@ -304,7 +304,7 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "443",
-              "sourceAddressPrefix": "1.2.4.0/8",
+              "sourceAddressPrefix": "1.2.4.0/24",
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "priority": 130,
