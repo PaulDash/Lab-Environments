@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.2.0.0",
+  "contentVersion": "1.2.0.1",
   "parameters": {
     "provisionLinux": {
       "type": "string",
@@ -84,7 +84,7 @@
     "generalSettings": {
       "vmDCName": "DC",
       "vmCARootName": "CA-Root",
-      "vmCAEntName": "CA-Ent",
+      "vmCAEntName": "CA",
       "vmIISName": "IIS",
       "vmCALinuxName": "CA-Linux",
       "vmStorageAccountType": "StandardSSD_LRS"
