@@ -10,7 +10,7 @@
         "No"
       ],
       "metadata": {
-        "description": "Deploy the optional GDC-Web member server (IIS and file shares). Choose No for a two-VM lab."
+        "description": "Deploy the optional WEB member server (IIS and file shares). Choose No for a two-VM lab."
       }
     },
     "createLabUser": {
@@ -32,7 +32,7 @@
         "No"
       ],
       "metadata": {
-        "description": "Give GDC-Cli a public IP for RDP. Choose No when using Azure Bastion. GDC-DC and GDC-Web never get public IPs."
+        "description": "Give CLI a public IP for RDP. Choose No when using Azure Bastion. DC and WEB never get public IPs."
       }
     },
     "deployBastion": {
@@ -50,6 +50,7 @@
       "type": "string",
       "defaultValue": "Basic",
       "allowedValues": [
+        "Developer",
         "Basic",
         "Standard"
       ],
@@ -61,7 +62,7 @@
       "type": "string",
       "defaultValue": "0.0.0.0/32",
       "metadata": {
-        "description": "Source address or CIDR allowed to RDP to GDC-Cli through its public IP. The default blocks all traffic; set it once the student addresses are known."
+        "description": "Source address or CIDR allowed to RDP to CLI through its public IP. The default blocks all traffic; set it once the student addresses are known."
       }
     },
     "vNetSecondOctet": {
@@ -104,24 +105,28 @@
     }
   },
   "variables": {
+    "dtlName": "lab-dtl",
+    "labName": "PS",
+    "envName": "[substring(resourceGroup().name, length(concat(variables('dtlName'), '-')), sub(lastIndexOf(resourceGroup().name, '-'), length(concat(variables('dtlName'), '-'))))]",
+    "namePrefix": "[concat('LAB-', variables('labName'), '-', variables('envName'))]",
     "generalSettings": {
-      "vmDCName": "GDC-DC",
-      "vmCliName": "GDC-Cli",
-      "vmWebName": "GDC-Web",
+      "vmDCName": "DC",
+      "vmCliName": "CLI",
+      "vmWebName": "WEB",
       "vmStorageAccountType": "StandardSSD_LRS",
       "domainFQDN": "lab.graydaycafe.com",
       "timeZone": "Central Europe Standard Time",
       "enableAutomaticUpdates": false
     },
     "networkSettings": {
-      "vNetName": "[concat(resourceGroup().name, '-vnet')]",
+      "vNetName": "[concat(variables('namePrefix'), '-vnet')]",
       "vNetPrefix": "[format('10.{0}.0.0/16', parameters('vNetSecondOctet'))]",
       "vNetSubnet1Name": "GDC-Domain",
       "vNetSubnet1Prefix": "[format('10.{0}.1.0/24', parameters('vNetSecondOctet'))]",
       "bastionSubnetPrefix": "[format('10.{0}.3.0/26', parameters('vNetSecondOctet'))]",
-      "nsgName": "NSG-Lab",
-      "bastionName": "[concat(resourceGroup().name, '-bastion')]",
-      "bastionPublicIPName": "[concat(resourceGroup().name, '-bastion-pip')]"
+      "nsgName": "[concat(variables('namePrefix'), '-nsg')]",
+      "bastionName": "[concat(variables('namePrefix'), '-bastion')]",
+      "bastionPublicIPName": "[concat(variables('namePrefix'), '-bastion-pip')]"
     },
     "subnetDomain": [
       {
@@ -143,28 +148,31 @@
       "vmImagePublisher": "MicrosoftWindowsServer",
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2025-datacenter-core-smalldisk-g2",
-      "vmOSDiskName": "Disk-GDC-DC-OS",
+      "vmResourceName": "[concat(variables('namePrefix'), '-DC-vm')]",
+      "vmOSDiskName": "[concat(variables('namePrefix'), '-DC-osdisk')]",
       "vmSize": "Standard_B2s",
-      "vmNicName": "NIC-GDC-DC-0",
+      "vmNicName": "[concat(variables('namePrefix'), '-DC-nic')]",
       "nicPrivateIPAddress": "[format('10.{0}.1.20', parameters('vNetSecondOctet'))]"
     },
     "vmCli": {
       "vmImagePublisher": "MicrosoftWindowsDesktop",
       "vmImageOffer": "windows-11",
       "vmImageSKU": "win11-25h2-pro",
-      "vmOSDiskName": "Disk-GDC-Cli-OS",
+      "vmResourceName": "[concat(variables('namePrefix'), '-CLI-vm')]",
+      "vmOSDiskName": "[concat(variables('namePrefix'), '-CLI-osdisk')]",
       "vmSize": "Standard_B2ms",
-      "vmNicName": "NIC-GDC-Cli-0",
-      "vmPublicIPName": "PublicIP-GDC-Cli",
+      "vmNicName": "[concat(variables('namePrefix'), '-CLI-nic')]",
+      "vmPublicIPName": "[concat(variables('namePrefix'), '-CLI-pip')]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-cli'), '_', '-'))]"
     },
     "vmWeb": {
       "vmImagePublisher": "MicrosoftWindowsServer",
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2025-datacenter-smalldisk-g2",
-      "vmOSDiskName": "Disk-GDC-Web-OS",
+      "vmResourceName": "[concat(variables('namePrefix'), '-WEB-vm')]",
+      "vmOSDiskName": "[concat(variables('namePrefix'), '-WEB-osdisk')]",
       "vmSize": "Standard_B2s",
-      "vmNicName": "NIC-GDC-Web-0"
+      "vmNicName": "[concat(variables('namePrefix'), '-WEB-nic')]"
     },
     "deployWeb": "[equals(parameters('deployWebServer'), 'Yes')]",
     "clientPublicIP": "[equals(parameters('addPublicIPToClient'), 'Yes')]",
@@ -306,7 +314,7 @@
       }
     },
     {
-      "name": "[variables('generalSettings').vmDCName]",
+      "name": "[variables('vmDC').vmResourceName]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
       "apiVersion": "2023-03-01",
@@ -314,7 +322,7 @@
         "[resourceId('Microsoft.Network/networkInterfaces', variables('vmDC').vmNicName)]"
       ],
       "tags": {
-        "displayName": "[variables('generalSettings').vmDCName]"
+        "displayName": "[variables('vmDC').vmResourceName]"
       },
       "properties": {
         "hardwareProfile": {
@@ -357,15 +365,15 @@
       },
       "resources": [
         {
-          "name": "ConfigureDCVM",
+          "name": "[concat(variables('namePrefix'), '-DC-vmext')]",
           "type": "extensions",
           "location": "[resourceGroup().location]",
           "apiVersion": "2023-03-01",
           "dependsOn": [
-            "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
+            "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDC').vmResourceName)]"
           ],
           "tags": {
-            "displayName": "ConfigureDCVM"
+            "displayName": "[concat(variables('namePrefix'), '-DC-vmext')]"
           },
           "properties": {
             "publisher": "Microsoft.Powershell",
@@ -430,7 +438,7 @@
         "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgName)]",
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCli').vmPublicIPName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDC').vmResourceName)]"
       ],
       "tags": {
         "displayName": "[variables('vmCli').vmNicName]"
@@ -454,7 +462,7 @@
       }
     },
     {
-      "name": "[variables('generalSettings').vmCliName]",
+      "name": "[variables('vmCli').vmResourceName]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
       "apiVersion": "2023-03-01",
@@ -462,7 +470,7 @@
         "[resourceId('Microsoft.Network/networkInterfaces', variables('vmCli').vmNicName)]"
       ],
       "tags": {
-        "displayName": "[variables('generalSettings').vmCliName]"
+        "displayName": "[variables('vmCli').vmResourceName]"
       },
       "properties": {
         "hardwareProfile": {
@@ -505,16 +513,16 @@
       }
     },
     {
-      "name": "[concat(variables('generalSettings').vmCliName, '/ConfigureCliVM')]",
+      "name": "[concat(variables('vmCli').vmResourceName, '/', variables('namePrefix'), '-CLI-vmext')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "location": "[resourceGroup().location]",
       "apiVersion": "2023-03-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('generalSettings').vmDCName, 'ConfigureDCVM')]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmCliName)]"
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('vmDC').vmResourceName, concat(variables('namePrefix'), '-DC-vmext'))]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmCli').vmResourceName)]"
       ],
       "tags": {
-        "displayName": "[concat(variables('generalSettings').vmCliName, '/ConfigureCliVM')]"
+        "displayName": "[concat(variables('vmCli').vmResourceName, '/', variables('namePrefix'), '-CLI-vmext')]"
       },
       "properties": {
         "publisher": "Microsoft.Powershell",
@@ -558,7 +566,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmDCName)]"
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDC').vmResourceName)]"
       ],
       "tags": {
         "displayName": "[variables('vmWeb').vmNicName]"
@@ -582,7 +590,7 @@
     },
     {
       "condition": "[variables('deployWeb')]",
-      "name": "[variables('generalSettings').vmWebName]",
+      "name": "[variables('vmWeb').vmResourceName]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
       "apiVersion": "2023-03-01",
@@ -590,7 +598,7 @@
         "[resourceId('Microsoft.Network/networkInterfaces', variables('vmWeb').vmNicName)]"
       ],
       "tags": {
-        "displayName": "[variables('generalSettings').vmWebName]"
+        "displayName": "[variables('vmWeb').vmResourceName]"
       },
       "properties": {
         "hardwareProfile": {
@@ -634,16 +642,16 @@
     },
     {
       "condition": "[variables('deployWeb')]",
-      "name": "[concat(variables('generalSettings').vmWebName, '/ConfigureWebVM')]",
+      "name": "[concat(variables('vmWeb').vmResourceName, '/', variables('namePrefix'), '-WEB-vmext')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "location": "[resourceGroup().location]",
       "apiVersion": "2023-03-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('generalSettings').vmDCName, 'ConfigureDCVM')]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('generalSettings').vmWebName)]"
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('vmDC').vmResourceName, concat(variables('namePrefix'), '-DC-vmext'))]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmWeb').vmResourceName)]"
       ],
       "tags": {
-        "displayName": "[concat(variables('generalSettings').vmWebName, '/ConfigureWebVM')]"
+        "displayName": "[concat(variables('vmWeb').vmResourceName, '/', variables('namePrefix'), '-WEB-vmext')]"
       },
       "properties": {
         "publisher": "Microsoft.Powershell",
