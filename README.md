@@ -1,4 +1,4 @@
-![DevTest Labs](.\DevTest-Labs.png)
+![DevTest Labs](DevTest-Labs.png)
 
 # Lab Environments for Azure DevTest Labs
 
