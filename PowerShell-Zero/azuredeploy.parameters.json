@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUserName": {
+      "value": "labadmin"
+    },
+    "adminPassword": {
+      "value": "GEN-PASSWORD"
+    },
+    "rdpSourceAddressPrefix": {
+      "value": "1.2.4.0/24"
+    },
+    "deployWebServer": {
+      "value": "Yes"
+    },
+    "createLabUser": {
+      "value": "Yes"
+    },
+    "addPublicIPToClient": {
+      "value": "Yes"
+    },
+    "deployBastion": {
+      "value": "No"
+    },
+    "vNetSecondOctet": {
+      "value": 30
+    }
+  }
+}

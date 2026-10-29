@@ -1,7 +1,7 @@
 {
   "itemDisplayName": "PowerShell Zero-to-Hero Lab",
-  "description": "This template deploys a lab environment for the PowerShell Zero-to-Hero course. This includes two Windows and (optionally) one Linux VMs. There's a AD DC and a domain-joined client.",
-  "summary": "This template deploys a lab environment for the PowerShell Zero-to-Hero course. This includes two Windows and (optionally) one Linux VMs.",
+  "description": "Lab environment for the PowerShell Zero-to-Hero course in the lab.graydaycafe.com domain: GDC-DC (Server Core domain controller) and GDC-Cli (Windows 11 client with RSAT, PowerShell 7, Sysinternals and VS Code). An optional GDC-Web member server (IIS and file shares) supports remoting and multiple-services demos.",
+  "summary": "Two or three VMs: Server Core domain controller, domain-joined Windows 11 client, and an optional web/file member server.",
   "githubUsername": "PaulDash",
   "dateUpdated": "2026-10-29"
 }
