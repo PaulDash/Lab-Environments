@@ -21,11 +21,13 @@ configuration ConfigureCAEntVM {
             RebootNodeIfNeeded = $true
         }
 
-        #**********************************************************
-        # Initialization of VM
-        #**********************************************************
         DnsServerAddress DnsServerAddress { Address = $DNSServer; InterfaceAlias = $InterfaceAlias; AddressFamily  = 'IPv4' }
 
+        WindowsFeature RSATADDS { Name = "RSAT-ADDS-Tools"; Ensure = "Present" }
+        WindowsFeature RSATDNS { Name = "RSAT-DNS-Server"; Ensure = "Present" }
+        WindowsFeature RSATADCS { Name = "RSAT-ADCS-Mgmt"; Ensure = "Present" }
+        WindowsFeature GroupPolicyManagement { Name = "GPMC"; Ensure = "Present" }
+        
         #**********************************************************
         # Join AD forest
         #**********************************************************

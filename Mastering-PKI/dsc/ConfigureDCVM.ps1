@@ -24,7 +24,7 @@
         Script script1 {
             SetScript =  {
                 Set-DnsServerDiagnostics -All $true
-                Write-Verbose -Verbose "Enabling DNS client diagnostics" 
+                Write-Verbose -Verbose "Enabling DNS client diagnostics"
             }
             GetScript =  { @{} }
             TestScript = { $false }
@@ -34,7 +34,7 @@
         WindowsFeature DnsTools { Name = "RSAT-DNS-Server"; Ensure = "Present" }
 
         DnsServerAddress DnsServerAddress {
-            Address        = '127.0.0.1' 
+            Address        = '127.0.0.1'
             InterfaceAlias = $InterfaceAlias
             AddressFamily  = 'IPv4'
             DependsOn = "[WindowsFeature]DNS"
@@ -53,7 +53,7 @@
         PendingReboot Reboot1 {
             Name = "RebootServer"
             DependsOn = "[xADDomain]FirstDS"
-        }       
+        }
 
         #**********************************************************
         # Misc: Set email of AD domain admin and add remote AD tools
@@ -93,6 +93,26 @@
             PasswordNeverExpires          = $true
             Ensure                        = "Present"
             DependsOn                     = "[PendingReboot]Reboot1"
+        }
+
+        xADGroup Marketing {
+            GroupName = "Marketing"
+            GroupScope = "Global"
+            Category = "Security"
+            MembersToInclude = @("${DomainNetbiosName}\Jane")
+            Ensure = "Present"
+            Credential = $DomainCredsNetbios
+            DependsOn = "[WindowsFeature]AddADFeature2", "[xADUser]CreateADUser2"
+        }
+
+        xADGroup IT {
+            GroupName = "IT"
+            GroupScope = "Global"
+            Category = "Security"
+            MembersToInclude = @("${DomainNetbiosName}\John")
+            Ensure = "Present"
+            Credential = $DomainCredsNetbios
+            DependsOn = "[WindowsFeature]AddADFeature2", "[xADUser]CreateADUser1"
         }
 
         WindowsFeature AddADFeature2    { Name = "RSAT-ADDS-Tools";     Ensure = "Present"; DependsOn = "[PendingReboot]Reboot1" }
