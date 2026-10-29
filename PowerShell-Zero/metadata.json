@@ -1,0 +1,7 @@
+{
+  "itemDisplayName": "PowerShell Zero-to-Hero Lab",
+  "description": "This template deploys a lab environment for the PowerShell Zero-to-Hero course. This includes two Windows and (optionally) one Linux VMs. There's a AD DC and a domain-joined client.",
+  "summary": "This template deploys a lab environment for the PowerShell Zero-to-Hero course. This includes two Windows and (optionally) one Linux VMs.",
+  "githubUsername": "PaulDash",
+  "dateUpdated": "2026-10-29"
+}
