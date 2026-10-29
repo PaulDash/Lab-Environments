@@ -1,6 +1,6 @@
 # Mastering PKI lab environment
 
-[![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](https://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FPaulDash%2FLab-Environments%2Fmaster%2FEnvironments%2FMastering-PKI%2Fazuredeploy.json)
+[![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](https://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FPaulDash%2FLab-Environments%2Fmaster%2FMastering-PKI%2Fazuredeploy.json)
 
 This ARM template deploys the Mastering PKI DevTest Labs environment: a domain controller, a standalone root CA, an Enterprise CA, and an IIS workstation. The root CA is a Windows Server 2025 Core VM and is configured manually using the course PowerShell guide. Linux is optional and defaults to off.
 
