@@ -8,4 +8,4 @@ The VMs share one NSG. Inbound management and web rules use `0.0.0.0/32` as a cl
 
 `Deploy.ps1` deploys the registered `Mastering-PKI` template from the selected DevTest Labs artifact source. Publish the updated local ARM template and DSC artifacts to that source before expecting this script to deploy these changes.
 
-[![Visualize](https://armviz.io/visualizebutton.png)(https://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FPaulDash%2FLab-Environments%2Fmaster%2FEnvironments%2FMastering-PKI%2Fazuredeploy.json)]
+[![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](https://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FPaulDash%2FLab-Environments%2Fmaster%2FEnvironments%2FMastering-PKI%2Fazuredeploy.json)
