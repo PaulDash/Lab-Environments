@@ -349,11 +349,11 @@
         "displayName": "[variables('vmDC').vmPublicIPName]"
       },
       "sku": {
-        "name": "Basic",
+        "name": "Standard",
         "tier": "Regional"
       },
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
         "dnsSettings": {
           "domainNameLabel": "[variables('vmDC').vmPublicIPDnsName]"
         }
@@ -498,11 +498,11 @@
         "displayName": "[variables('vmIIS').vmPublicIPName]"
       },
       "sku": {
-        "name": "Basic",
+        "name": "Standard",
         "tier": "Regional"
       },
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
         "dnsSettings": {
           "domainNameLabel": "[variables('vmIIS').vmPublicIPDnsName]"
         }
@@ -647,11 +647,11 @@
         "displayName": "[variables('vmCARoot').vmPublicIPName]"
       },
       "sku": {
-        "name": "Basic",
+        "name": "Standard",
         "tier": "Regional"
       },
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
         "dnsSettings": {
           "domainNameLabel": "[variables('vmCARoot').vmPublicIPDnsName]"
         }
@@ -751,11 +751,11 @@
         "displayName": "[variables('vmCAEnt').vmPublicIPName]"
       },
       "sku": {
-        "name": "Basic",
+        "name": "Standard",
         "tier": "Regional"
       },
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
         "dnsSettings": {
           "domainNameLabel": "[variables('vmCAEnt').vmPublicIPDnsName]"
         }
@@ -900,11 +900,11 @@
         "displayName": "[variables('vmCALinux').vmPublicIPName]"
       },
       "sku": {
-        "name": "Basic",
+        "name": "Standard",
         "tier": "Regional"
       },
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
         "dnsSettings": {
           "domainNameLabel": "[variables('vmCALinux').vmPublicIPDnsName]"
         }
