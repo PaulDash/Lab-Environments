@@ -15,4 +15,4 @@ Accounts: `labadmin` (domain admin) and, optionally, `labuser` (standard user) w
 
 ## Key parameters
 
-`deployWebServer`, `createLabUser`, `addPublicIPToClient`, `deployBastion`, `rdpSourceAddressPrefix` (required), `clientImageSku`.
+`deployWebServer`, `createLabUser`, `addPublicIPToClient`, `deployBastion`, `rdpSourceAddressPrefix` (defaults to the blocking placeholder `0.0.0.0/32`; set it once student addresses are known), `clientImageSku`.

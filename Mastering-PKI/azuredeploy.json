@@ -22,14 +22,6 @@
         "description": "Second octet for the lab network: 10.<value>.0.0/16."
       }
     },
-    "domainFQDN": {
-      "type": "string",
-      "defaultValue": "lab.graydaycafe.com",
-      "minLength": 5,
-      "metadata": {
-        "description": "FQDN of the AD forest to create."
-      }
-    },
     "adminUserName": {
       "type": "string",
       "minLength": 1,
@@ -79,23 +71,11 @@
         "description": "Size of the Linux VM"
       }
     },
-    "vmsTimeZone": {
+    "rdpSourceAddressPrefix": {
       "type": "string",
-      "defaultValue": "Central Europe Standard Time",
-      "minLength": 2,
+      "defaultValue": "0.0.0.0/32",
       "metadata": {
-        "description": "Time zone of the VMs. Type \"[TimeZoneInfo]::GetSystemTimeZones().Id\" in PowerShell to get the list. Example: 'Central Europe Standard Time' Note that 'UTC' works but 'UTC+xx' does NOT work."
-      }
-    },
-    "enableAutomaticUpdates": {
-      "type": "string",
-      "allowedValues": [
-        "Yes",
-        "No"
-      ],
-      "defaultValue": "No",
-      "metadata": {
-        "description": "Enable automatic Windows Updates."
+        "description": "Source address or CIDR allowed inbound (RDP, SSH, HTTP, HTTPS). The default blocks all traffic; set it once the student addresses are known."
       }
     },
     "addPublicIPAddressToEachVM": {
@@ -131,7 +111,10 @@
       "vmCAEntName":   "CA",
       "vmIISName":     "IIS",
       "vmCALinuxName": "CA-Linux",
-      "vmStorageAccountType": "Standard_LRS"
+      "vmStorageAccountType": "Standard_LRS",
+      "domainFQDN": "lab.graydaycafe.com",
+      "timeZone": "Central Europe Standard Time",
+      "enableAutomaticUpdates": false
     },
     "networkSettings": {
       "vNetName":   "[concat(resourceGroup().name, '-vnet')]",
@@ -164,7 +147,7 @@
             "protocol": "Tcp",
             "sourcePortRange": "*",
             "destinationPortRange": "3389",
-            "sourceAddressPrefix": "0.0.0.0/32",
+            "sourceAddressPrefix": "[parameters('rdpSourceAddressPrefix')]",
             "destinationAddressPrefix": "*",
             "access": "Allow",
             "priority": 100,
@@ -178,7 +161,7 @@
             "protocol": "Tcp",
             "sourcePortRange": "*",
             "destinationPortRange": "80",
-            "sourceAddressPrefix": "0.0.0.0/32",
+            "sourceAddressPrefix": "[parameters('rdpSourceAddressPrefix')]",
             "destinationAddressPrefix": "*",
             "access": "Allow",
             "priority": 120,
@@ -192,7 +175,7 @@
             "protocol": "Tcp",
             "sourcePortRange": "*",
             "destinationPortRange": "443",
-            "sourceAddressPrefix": "0.0.0.0/32",
+            "sourceAddressPrefix": "[parameters('rdpSourceAddressPrefix')]",
             "destinationAddressPrefix": "*",
             "access": "Allow",
             "priority": 130,
@@ -206,7 +189,7 @@
             "protocol": "Tcp",
             "sourcePortRange": "*",
             "destinationPortRange": "22",
-            "sourceAddressPrefix": "0.0.0.0/32",
+            "sourceAddressPrefix": "[parameters('rdpSourceAddressPrefix')]",
             "destinationAddressPrefix": "*",
             "access": "Allow",
             "priority": 110,
@@ -411,8 +394,8 @@
           "adminUsername": "[parameters('adminUserName')]",
           "adminPassword": "[parameters('adminPassword')]",
           "windowsConfiguration": {
-            "timeZone": "[parameters('vmsTimeZone')]",
-            "enableAutomaticUpdates": "[if(equals(parameters('enableAutomaticUpdates'), 'Yes'), 'true', 'false')]",
+            "timeZone": "[variables('generalSettings').timeZone]",
+            "enableAutomaticUpdates": "[variables('generalSettings').enableAutomaticUpdates]",
             "provisionVMAgent": true
           }
         },
@@ -467,7 +450,7 @@
                 "function": "[variables('dscConfigureDCVM').function]"
               },
               "configurationArguments": {
-                "domainFQDN": "[parameters('domainFQDN')]",
+                "domainFQDN": "[variables('generalSettings').domainFQDN]",
                 "PrivateIP": "[variables('vmDC').nicPrivateIPAddress]"
               },
               "privacy": {
@@ -560,8 +543,8 @@
           "adminUsername": "[parameters('adminUserName')]",
           "adminPassword": "[parameters('adminPassword')]",
           "windowsConfiguration": {
-            "timeZone": "[parameters('vmsTimeZone')]",
-            "enableAutomaticUpdates": "[if(equals(parameters('enableAutomaticUpdates'), 'Yes'), 'true', 'false')]",
+            "timeZone": "[variables('generalSettings').timeZone]",
+            "enableAutomaticUpdates": "[variables('generalSettings').enableAutomaticUpdates]",
             "provisionVMAgent": true
           }
         },
@@ -619,7 +602,7 @@
           },
           "configurationArguments": {
             "DNSServer": "[variables('vmDC').nicPrivateIPAddress]",
-            "DomainFQDN": "[parameters('domainFQDN')]"
+            "DomainFQDN": "[variables('generalSettings').domainFQDN]"
           },
           "privacy": {
             "dataCollection": "enable"
@@ -708,8 +691,8 @@
           "adminUsername": "[parameters('adminUserName')]",
           "adminPassword": "[parameters('adminPassword')]",
           "windowsConfiguration": {
-            "timeZone": "[parameters('vmsTimeZone')]",
-            "enableAutomaticUpdates": "[if(equals(parameters('enableAutomaticUpdates'), 'Yes'), 'true', 'false')]",
+            "timeZone": "[variables('generalSettings').timeZone]",
+            "enableAutomaticUpdates": "[variables('generalSettings').enableAutomaticUpdates]",
             "provisionVMAgent": true
           }
         },
@@ -813,8 +796,8 @@
           "adminUsername": "[parameters('adminUserName')]",
           "adminPassword": "[parameters('adminPassword')]",
           "windowsConfiguration": {
-            "timeZone": "[parameters('vmsTimeZone')]",
-            "enableAutomaticUpdates": "[if(equals(parameters('enableAutomaticUpdates'), 'Yes'), 'true', 'false')]",
+            "timeZone": "[variables('generalSettings').timeZone]",
+            "enableAutomaticUpdates": "[variables('generalSettings').enableAutomaticUpdates]",
             "provisionVMAgent": true
           }
         },
@@ -872,7 +855,7 @@
           },
           "configurationArguments": {
             "DNSServer": "[variables('vmDC').nicPrivateIPAddress]",
-            "DomainFQDN": "[parameters('domainFQDN')]"
+            "DomainFQDN": "[variables('generalSettings').domainFQDN]"
           },
           "privacy": {
             "dataCollection": "enable"

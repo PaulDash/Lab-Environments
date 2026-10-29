@@ -59,8 +59,9 @@
     },
     "rdpSourceAddressPrefix": {
       "type": "string",
+      "defaultValue": "0.0.0.0/32",
       "metadata": {
-        "description": "Source address or CIDR allowed to RDP to GDC-Cli through its public IP, for example 203.0.113.10/32. Use '*' only for short-lived labs."
+        "description": "Source address or CIDR allowed to RDP to GDC-Cli through its public IP. The default blocks all traffic; set it once the student addresses are known."
       }
     },
     "vNetSecondOctet": {
@@ -70,14 +71,6 @@
       "maxValue": 255,
       "metadata": {
         "description": "Second octet for the lab network: 10.<value>.0.0/16."
-      }
-    },
-    "domainFQDN": {
-      "type": "string",
-      "defaultValue": "lab.graydaycafe.com",
-      "minLength": 5,
-      "metadata": {
-        "description": "FQDN of the AD forest to create."
       }
     },
     "adminUserName": {
@@ -93,32 +86,6 @@
       "minLength": 8,
       "metadata": {
         "description": "Must meet the complexity requirements for 'adminPassword' of Microsoft.Compute/virtualMachines."
-      }
-    },
-    "clientImageSku": {
-      "type": "string",
-      "defaultValue": "win11-25h2-pro",
-      "metadata": {
-        "description": "SKU of the MicrosoftWindowsDesktop 'windows-11' image used for GDC-Cli."
-      }
-    },
-    "vmsTimeZone": {
-      "type": "string",
-      "defaultValue": "Central Europe Standard Time",
-      "minLength": 2,
-      "metadata": {
-        "description": "Time zone of the VMs. Type \"[TimeZoneInfo]::GetSystemTimeZones().Id\" in PowerShell to get the list. 'UTC' works but 'UTC+xx' does NOT."
-      }
-    },
-    "enableAutomaticUpdates": {
-      "type": "string",
-      "allowedValues": [
-        "Yes",
-        "No"
-      ],
-      "defaultValue": "No",
-      "metadata": {
-        "description": "Enable automatic Windows Updates."
       }
     },
     "_artifactsLocation": {
@@ -141,7 +108,10 @@
       "vmDCName": "GDC-DC",
       "vmCliName": "GDC-Cli",
       "vmWebName": "GDC-Web",
-      "vmStorageAccountType": "StandardSSD_LRS"
+      "vmStorageAccountType": "StandardSSD_LRS",
+      "domainFQDN": "lab.graydaycafe.com",
+      "timeZone": "Central Europe Standard Time",
+      "enableAutomaticUpdates": false
     },
     "networkSettings": {
       "vNetName": "[concat(resourceGroup().name, '-vnet')]",
@@ -181,6 +151,7 @@
     "vmCli": {
       "vmImagePublisher": "MicrosoftWindowsDesktop",
       "vmImageOffer": "windows-11",
+      "vmImageSKU": "win11-25h2-pro",
       "vmOSDiskName": "Disk-GDC-Cli-OS",
       "vmSize": "Standard_B2ms",
       "vmNicName": "NIC-GDC-Cli-0",
@@ -354,8 +325,8 @@
           "adminUsername": "[parameters('adminUserName')]",
           "adminPassword": "[parameters('adminPassword')]",
           "windowsConfiguration": {
-            "timeZone": "[parameters('vmsTimeZone')]",
-            "enableAutomaticUpdates": "[equals(parameters('enableAutomaticUpdates'), 'Yes')]",
+            "timeZone": "[variables('generalSettings').timeZone]",
+            "enableAutomaticUpdates": "[variables('generalSettings').enableAutomaticUpdates]",
             "provisionVMAgent": true
           }
         },
@@ -410,7 +381,7 @@
                 "function": "[variables('dscConfigureDCVM').function]"
               },
               "configurationArguments": {
-                "DomainFQDN": "[parameters('domainFQDN')]",
+                "DomainFQDN": "[variables('generalSettings').domainFQDN]",
                 "PrivateIP": "[variables('vmDC').nicPrivateIPAddress]",
                 "CreateLabUser": "[equals(parameters('createLabUser'), 'Yes')]"
               },
@@ -502,8 +473,8 @@
           "adminUsername": "[parameters('adminUserName')]",
           "adminPassword": "[parameters('adminPassword')]",
           "windowsConfiguration": {
-            "timeZone": "[parameters('vmsTimeZone')]",
-            "enableAutomaticUpdates": "[equals(parameters('enableAutomaticUpdates'), 'Yes')]",
+            "timeZone": "[variables('generalSettings').timeZone]",
+            "enableAutomaticUpdates": "[variables('generalSettings').enableAutomaticUpdates]",
             "provisionVMAgent": true
           }
         },
@@ -511,7 +482,7 @@
           "imageReference": {
             "publisher": "[variables('vmCli').vmImagePublisher]",
             "offer": "[variables('vmCli').vmImageOffer]",
-            "sku": "[parameters('clientImageSku')]",
+            "sku": "[variables('vmCli').vmImageSKU]",
             "version": "latest"
           },
           "osDisk": {
@@ -560,7 +531,7 @@
           },
           "configurationArguments": {
             "DNSServer": "[variables('vmDC').nicPrivateIPAddress]",
-            "DomainFQDN": "[parameters('domainFQDN')]",
+            "DomainFQDN": "[variables('generalSettings').domainFQDN]",
             "IncludeWebTools": "[variables('deployWeb')]"
           },
           "privacy": {
@@ -630,8 +601,8 @@
           "adminUsername": "[parameters('adminUserName')]",
           "adminPassword": "[parameters('adminPassword')]",
           "windowsConfiguration": {
-            "timeZone": "[parameters('vmsTimeZone')]",
-            "enableAutomaticUpdates": "[equals(parameters('enableAutomaticUpdates'), 'Yes')]",
+            "timeZone": "[variables('generalSettings').timeZone]",
+            "enableAutomaticUpdates": "[variables('generalSettings').enableAutomaticUpdates]",
             "provisionVMAgent": true
           }
         },
@@ -689,7 +660,7 @@
           },
           "configurationArguments": {
             "DNSServer": "[variables('vmDC').nicPrivateIPAddress]",
-            "DomainFQDN": "[parameters('domainFQDN')]"
+            "DomainFQDN": "[variables('generalSettings').domainFQDN]"
           },
           "privacy": {
             "dataCollection": "enable"
