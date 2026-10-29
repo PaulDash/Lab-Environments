@@ -114,22 +114,44 @@ configuration ConfigureDCVM {
 
         foreach ($U in $SeedUsers) {
             $UserKey = $U.SamAccountName -replace '\W', '_'
-            xADUser "User_$UserKey" {
-                DomainAdministratorCredential = $DomainCredsNetbios
-                DomainName           = $DomainFQDN
-                UserName             = $U.SamAccountName
-                GivenName            = $U.GivenName
-                Surname              = $U.Surname
-                DisplayName          = "$($U.GivenName) $($U.Surname)"
-                Department           = $U.Department
-                JobTitle             = $U.Title
-                EmailAddress         = "$($U.SamAccountName)@$DomainFQDN"
-                Path                 = "OU=$($U.Department),OU=Departments,$DomainDN"
-                Enabled              = [System.Convert]::ToBoolean($U.Enabled)
-                Password             = $Admincreds
-                PasswordNeverExpires = $true
-                Ensure               = 'Present'
-                DependsOn            = "[xADOrganizationalUnit]OuDept_$($U.Department)"
+            $UserEnabled = [System.Convert]::ToBoolean($U.Enabled)
+            # xADUser rejects Enabled=$false together with Password, so disabled users get no password.
+            if ($UserEnabled) {
+                xADUser "User_$UserKey" {
+                    DomainAdministratorCredential = $DomainCredsNetbios
+                    DomainName           = $DomainFQDN
+                    UserName             = $U.SamAccountName
+                    GivenName            = $U.GivenName
+                    Surname              = $U.Surname
+                    DisplayName          = "$($U.GivenName) $($U.Surname)"
+                    Department           = $U.Department
+                    JobTitle             = $U.Title
+                    EmailAddress         = "$($U.SamAccountName)@$DomainFQDN"
+                    Path                 = "OU=$($U.Department),OU=Departments,$DomainDN"
+                    Enabled              = $true
+                    Password             = $Admincreds
+                    PasswordNeverExpires = $true
+                    Ensure               = 'Present'
+                    DependsOn            = "[xADOrganizationalUnit]OuDept_$($U.Department)"
+                }
+            }
+            else {
+                xADUser "User_$UserKey" {
+                    DomainAdministratorCredential = $DomainCredsNetbios
+                    DomainName           = $DomainFQDN
+                    UserName             = $U.SamAccountName
+                    GivenName            = $U.GivenName
+                    Surname              = $U.Surname
+                    DisplayName          = "$($U.GivenName) $($U.Surname)"
+                    Department           = $U.Department
+                    JobTitle             = $U.Title
+                    EmailAddress         = "$($U.SamAccountName)@$DomainFQDN"
+                    Path                 = "OU=$($U.Department),OU=Departments,$DomainDN"
+                    Enabled              = $false
+                    PasswordNeverExpires = $true
+                    Ensure               = 'Present'
+                    DependsOn            = "[xADOrganizationalUnit]OuDept_$($U.Department)"
+                }
             }
         }
 

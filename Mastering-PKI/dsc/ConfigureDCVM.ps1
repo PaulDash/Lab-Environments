@@ -6,6 +6,7 @@
     )
 
     Import-DscResource -ModuleName xActiveDirectory, NetworkingDsc, xPSDesiredStateConfiguration, ActiveDirectoryCSDsc, CertificateDsc, xDnsServer, ComputerManagementDsc
+
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     [System.Management.Automation.PSCredential] $DomainCredsNetbios = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
@@ -53,6 +54,11 @@
         PendingReboot Reboot1 {
             Name = "RebootServer"
             DependsOn = "[xADDomain]FirstDS"
+        }
+
+        Firewall IcmpV4Echo {
+            Name    = 'FPS-ICMP4-ERQ-In'
+            Enabled = 'True'
         }
 
         #**********************************************************
