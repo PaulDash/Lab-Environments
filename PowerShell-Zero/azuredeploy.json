@@ -95,27 +95,6 @@
         "description": "Must meet the complexity requirements for 'adminPassword' of Microsoft.Compute/virtualMachines."
       }
     },
-    "vmDCSize": {
-      "type": "string",
-      "defaultValue": "Standard_B2s",
-      "metadata": {
-        "description": "Size of the GDC-DC VM."
-      }
-    },
-    "vmCliSize": {
-      "type": "string",
-      "defaultValue": "Standard_B2ms",
-      "metadata": {
-        "description": "Size of the GDC-Cli VM."
-      }
-    },
-    "vmWebSize": {
-      "type": "string",
-      "defaultValue": "Standard_B2s",
-      "metadata": {
-        "description": "Size of the GDC-Web VM."
-      }
-    },
     "clientImageSku": {
       "type": "string",
       "defaultValue": "win11-25h2-pro",
@@ -195,6 +174,7 @@
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2025-datacenter-core-smalldisk-g2",
       "vmOSDiskName": "Disk-GDC-DC-OS",
+      "vmSize": "Standard_B2s",
       "vmNicName": "NIC-GDC-DC-0",
       "nicPrivateIPAddress": "[format('10.{0}.1.20', parameters('vNetSecondOctet'))]"
     },
@@ -202,6 +182,7 @@
       "vmImagePublisher": "MicrosoftWindowsDesktop",
       "vmImageOffer": "windows-11",
       "vmOSDiskName": "Disk-GDC-Cli-OS",
+      "vmSize": "Standard_B2ms",
       "vmNicName": "NIC-GDC-Cli-0",
       "vmPublicIPName": "PublicIP-GDC-Cli",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-cli'), '_', '-'))]"
@@ -211,6 +192,7 @@
       "vmImageOffer": "WindowsServer",
       "vmImageSKU": "2025-datacenter-smalldisk-g2",
       "vmOSDiskName": "Disk-GDC-Web-OS",
+      "vmSize": "Standard_B2s",
       "vmNicName": "NIC-GDC-Web-0"
     },
     "deployWeb": "[equals(parameters('deployWebServer'), 'Yes')]",
@@ -365,7 +347,7 @@
       },
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[parameters('vmDCSize')]"
+          "vmSize": "[variables('vmDC').vmSize]"
         },
         "osProfile": {
           "computerName": "[variables('generalSettings').vmDCName]",
@@ -513,7 +495,7 @@
       },
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[parameters('vmCliSize')]"
+          "vmSize": "[variables('vmCli').vmSize]"
         },
         "osProfile": {
           "computerName": "[variables('generalSettings').vmCliName]",
@@ -641,7 +623,7 @@
       },
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[parameters('vmWebSize')]"
+          "vmSize": "[variables('vmWeb').vmSize]"
         },
         "osProfile": {
           "computerName": "[variables('generalSettings').vmWebName]",
