@@ -54,17 +54,6 @@ configuration ConfigureDCVM {
             Enabled = 'True'
         }
 
-        Script InstallPowerShell7 {
-            GetScript  = { @{ Result = (Test-Path "$env:ProgramFiles\PowerShell\7\pwsh.exe") } }
-            TestScript = { Test-Path "$env:ProgramFiles\PowerShell\7\pwsh.exe" }
-            SetScript  = {
-                $ProgressPreference = 'SilentlyContinue'
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-                $installer = Invoke-RestMethod -Uri 'https://aka.ms/install-powershell.ps1'
-                & ([scriptblock]::Create($installer)) -UseMSI -Quiet -EnablePSRemoting
-            }
-        }
-
         #**********************************************************
         # Lab accounts
         #**********************************************************

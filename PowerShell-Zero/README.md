@@ -7,7 +7,7 @@ Azure DevTest Labs environment for the PowerShell Zero-to-Hero course. Domain: `
 
 | VM | OS | Role |
 | ---- | ---- | ----- |
-| GDC-DC | Windows Server 2025 Core | AD DS, DNS, sample OUs/users/groups, PowerShell 7 |
+| GDC-DC | Windows Server 2025 Core | AD DS, DNS, sample OUs/users/groups |
 | GDC-Cli | Windows 11 Pro | Student workstation: RSAT (incl. AD Administrative Center), PowerShell 7, Sysinternals, VS Code |
 | GDC-Web (optional) | Windows Server 2025 Desktop | IIS, file shares, seeded services/event log, PowerShell 7, Sysinternals |
 

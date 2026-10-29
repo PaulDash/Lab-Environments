@@ -66,7 +66,7 @@ configuration ConfigureCliVM {
                 $ProgressPreference = 'SilentlyContinue'
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
                 $installer = Invoke-RestMethod -Uri 'https://aka.ms/install-powershell.ps1'
-                & ([scriptblock]::Create($installer)) -UseMSI -Quiet -EnablePSRemoting
+                & ([scriptblock]::Create($installer)) -UseMSI -Quiet
             }
             DependsOn  = "[Script]EnablePSRemoting"
         }
