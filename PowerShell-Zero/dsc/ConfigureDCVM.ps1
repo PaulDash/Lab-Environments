@@ -27,11 +27,30 @@ configuration ConfigureDCVM {
         WindowsFeature DNS  { Name = "DNS";                Ensure = "Present" }
         WindowsFeature ADPowerShell { Name = "RSAT-AD-PowerShell"; Ensure = "Present"; DependsOn = "[WindowsFeature]ADDS" }
 
+        # Clients use this server as their only DNS server. Forward names that
+        # are not hosted in AD DNS to Azure's recursive resolver.
+        Script AzureDnsForwarder {
+            GetScript = {
+                $forwarders = (Get-DnsServerForwarder -ErrorAction SilentlyContinue).IPAddress |
+                    ForEach-Object { $_.IPAddressToString }
+                @{ Result = ($forwarders -join ',') }
+            }
+            TestScript = {
+                $forwarders = (Get-DnsServerForwarder -ErrorAction SilentlyContinue).IPAddress |
+                    ForEach-Object { $_.IPAddressToString }
+                $forwarders -contains '168.63.129.16'
+            }
+            SetScript = {
+                Set-DnsServerForwarder -IPAddress '168.63.129.16'
+            }
+            DependsOn = '[WindowsFeature]DNS'
+        }
+
         DnsServerAddress DnsServerAddress {
             Address        = '127.0.0.1'
             InterfaceAlias = $InterfaceAlias
             AddressFamily  = 'IPv4'
-            DependsOn      = "[WindowsFeature]DNS"
+            DependsOn      = '[Script]AzureDnsForwarder'
         }
 
         xADDomain FirstDS {

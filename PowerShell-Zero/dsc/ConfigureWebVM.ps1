@@ -10,7 +10,10 @@ configuration ConfigureWebVM {
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
-    [PSCredential] $DomainAdminCredsQualified = New-Object PSCredential ("${DomainNetbiosName}\$($DomainAdminCreds.UserName)", $DomainAdminCreds.Password)
+    # ComputerManagementDsc's Computer resource can emit a false authentication
+    # error during its LDAP pre-check when the credential uses DOMAIN\user.
+    # UPN format works for both that pre-check and Add-Computer.
+    [PSCredential] $DomainAdminCredsQualified = New-Object PSCredential ("$($DomainAdminCreds.UserName)@$DomainFQDN", $DomainAdminCreds.Password)
     $ComputerName = Get-Content env:computername
     [Int] $RetryCount = 30
     [Int] $RetryIntervalSec = 30

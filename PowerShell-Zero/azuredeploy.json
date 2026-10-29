@@ -180,19 +180,19 @@
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureDCVM.zip', parameters('_artifactsLocationSasToken'))]",
       "script": "ConfigureDCVM.ps1",
       "function": "ConfigureDCVM",
-      "forceUpdateTag": "1.0"
+      "forceUpdateTag": "1.1"
     },
     "dscConfigureCliVM": {
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureCliVM.zip', parameters('_artifactsLocationSasToken'))]",
       "script": "ConfigureCliVM.ps1",
       "function": "ConfigureCliVM",
-      "forceUpdateTag": "1.0"
+      "forceUpdateTag": "1.1"
     },
     "dscConfigureWebVM": {
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureWebVM.zip', parameters('_artifactsLocationSasToken'))]",
       "script": "ConfigureWebVM.ps1",
       "function": "ConfigureWebVM",
-      "forceUpdateTag": "1.0"
+      "forceUpdateTag": "1.1"
     }
   },
   "resources": [
