@@ -160,7 +160,7 @@
       "vmImageSKU": "base-win11-gen2",
       "vmResourceName": "[concat(variables('namePrefix'), '-CLI-vm')]",
       "vmOSDiskName": "[concat(variables('namePrefix'), '-CLI-osdisk')]",
-      "vmSize": "Standard_D2s_v5",
+      "vmSize": "Standard_D2s_v6",
       "vmNicName": "[concat(variables('namePrefix'), '-CLI-nic')]",
       "vmPublicIPName": "[concat(variables('namePrefix'), '-CLI-pip')]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-cli'), '_', '-'))]"
