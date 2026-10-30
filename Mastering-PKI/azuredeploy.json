@@ -264,7 +264,7 @@
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureIISVM.zip', parameters('_artifactsLocationSasToken'))]",
       "script": "ConfigureIISVM.ps1",
       "function": "ConfigureIISVM",
-      "forceUpdateTag": "1.0"
+      "forceUpdateTag": "1.1"
     },
     "dscConfigureCAEntVM": {
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureCAEntVM.zip', parameters('_artifactsLocationSasToken'))]",

@@ -172,7 +172,7 @@
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureWebVM.zip', parameters('_artifactsLocationSasToken'))]",
       "script": "ConfigureWebVM.ps1",
       "function": "ConfigureWebVM",
-      "forceUpdateTag": "1.2"
+      "forceUpdateTag": "1.3"
     }
   },
   "resources": [
