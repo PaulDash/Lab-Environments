@@ -10,6 +10,7 @@ configuration ConfigureDCVM {
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     [String] $DomainDN = 'DC=' + (($DomainFQDN -split '\.') -join ',DC=')
     [System.Management.Automation.PSCredential] $DomainCredsNetbios = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
+
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
 
@@ -24,6 +25,8 @@ configuration ConfigureDCVM {
 
         WindowsFeature ADDS { Name = "AD-Domain-Services"; Ensure = "Present" }
         WindowsFeature DNS  { Name = "DNS";                Ensure = "Present" }
+
+
         WindowsFeature ADPowerShell { Name = "RSAT-AD-PowerShell"; Ensure = "Present"; DependsOn = "[WindowsFeature]ADDS" }
 
         # Clients use this server as their only DNS server. Forward names that
@@ -87,35 +90,11 @@ configuration ConfigureDCVM {
             DependsOn = "[PendingReboot]Reboot1"
         }
 
-        xADUser LabUser {
-            DomainAdministratorCredential = $DomainCredsNetbios
-            DomainName           = $DomainFQDN
-            UserName             = 'labuser'
-            GivenName            = 'Lab'
-            Surname              = 'User'
-            DisplayName          = 'Lab User'
-            EmailAddress         = 'labuser@' + $DomainFQDN
-            Password             = $Admincreds
-            PasswordNeverExpires = $true
-            Ensure               = 'Present'
-            DependsOn            = "[PendingReboot]Reboot1"
-        }
-
         #**********************************************************
         # Sample directory data for the demos
         #**********************************************************
         xADOrganizationalUnit OuDepartments {
             Name = 'Departments'; Path = $DomainDN; Credential = $DomainCredsNetbios
-            ProtectedFromAccidentalDeletion = $false; Ensure = 'Present'
-            DependsOn = "[PendingReboot]Reboot1"
-        }
-        xADOrganizationalUnit OuWorkstations {
-            Name = 'Workstations'; Path = $DomainDN; Credential = $DomainCredsNetbios
-            ProtectedFromAccidentalDeletion = $false; Ensure = 'Present'
-            DependsOn = "[PendingReboot]Reboot1"
-        }
-        xADOrganizationalUnit OuServers {
-            Name = 'Servers'; Path = $DomainDN; Credential = $DomainCredsNetbios
             ProtectedFromAccidentalDeletion = $false; Ensure = 'Present'
             DependsOn = "[PendingReboot]Reboot1"
         }

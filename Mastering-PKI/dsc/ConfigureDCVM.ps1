@@ -9,8 +9,13 @@
 
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     [System.Management.Automation.PSCredential] $DomainCredsNetbios = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
+
+
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
+
+
+
 
     Node localhost {
         LocalConfigurationManager {
@@ -20,25 +25,34 @@
 
         WindowsFeature ADDS { Name = "AD-Domain-Services"; Ensure = "Present" }
         WindowsFeature DNS  { Name = "DNS";                Ensure = "Present" }
+
         WindowsFeature RSAT { Name = "RSAT";               Ensure = "Present" }
-
-        Script script1 {
-            SetScript =  {
-                Set-DnsServerDiagnostics -All $true
-                Write-Verbose -Verbose "Enabling DNS client diagnostics"
-            }
-            GetScript =  { @{} }
-            TestScript = { $false }
-            DependsOn = "[WindowsFeature]DNS"
-        }
-
         WindowsFeature DnsTools { Name = "RSAT-DNS-Server"; Ensure = "Present" }
+
+        # Clients use this server as their only DNS server. Forward names that
+        # are not hosted in AD DNS to Azure's recursive resolver.
+        Script AzureDnsForwarder {
+            GetScript = {
+                $forwarders = (Get-DnsServerForwarder -ErrorAction SilentlyContinue).IPAddress |
+                    ForEach-Object { $_.IPAddressToString }
+                @{ Result = ($forwarders -join ',') }
+            }
+            TestScript = {
+                $forwarders = (Get-DnsServerForwarder -ErrorAction SilentlyContinue).IPAddress |
+                    ForEach-Object { $_.IPAddressToString }
+                $forwarders -contains '168.63.129.16'
+            }
+            SetScript = {
+                Set-DnsServerForwarder -IPAddress '168.63.129.16'
+            }
+            DependsOn = '[WindowsFeature]DNS'
+        }
 
         DnsServerAddress DnsServerAddress {
             Address        = '127.0.0.1'
             InterfaceAlias = $InterfaceAlias
             AddressFamily  = 'IPv4'
-            DependsOn = "[WindowsFeature]DNS"
+            DependsOn      = '[Script]AzureDnsForwarder'
         }
 
         xADDomain FirstDS {
@@ -48,7 +62,7 @@
             DatabasePath = "C:\NTDS"
             LogPath = "C:\NTDS"
             SysvolPath = "C:\SYSVOL"
-            DependsOn = "[DnsServerAddress]DnsServerAddress"
+            DependsOn = "[DnsServerAddress]DnsServerAddress", "[WindowsFeature]ADDS"
         }
 
         PendingReboot Reboot1 {
