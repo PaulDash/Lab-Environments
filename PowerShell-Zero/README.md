@@ -7,9 +7,9 @@ Azure DevTest Labs environment for the PowerShell Zero-to-Hero course. Domain: `
 
 | VM | OS | Role |
 | ---- | ---- | ----- |
-| DC | Windows Server 2025 Core | AD DS, DNS, sample OUs/users/groups |
-| CLI | Windows 11 Pro | Student workstation: RSAT (incl. AD Administrative Center), PowerShell 7, Sysinternals, VS Code |
-| WEB (optional) | Windows Server 2025 Desktop | IIS, file shares, seeded services/event log, PowerShell 7, Sysinternals |
+| DC | Windows Server 2025 Core | Trusted Launch AD DS, DNS, sample OUs/users/groups |
+| CLI | Windows 11 + tools (Gen 2) | Trusted Launch student workstation, domain joined with RSAT |
+| WEB (optional) | Windows Server 2025 Desktop | Trusted Launch IIS/file server with seeded services and event log |
 
 Accounts: `labadmin` (domain admin) and, optionally, `labuser` (standard user) with the same password.
 

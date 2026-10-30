@@ -155,12 +155,12 @@
       "nicPrivateIPAddress": "[format('10.{0}.1.20', parameters('vNetSecondOctet'))]"
     },
     "vmCli": {
-      "vmImagePublisher": "MicrosoftWindowsDesktop",
-      "vmImageOffer": "windows-11",
-      "vmImageSKU": "win11-25h2-pro",
+      "vmImagePublisher": "MicrosoftVisualStudio",
+      "vmImageOffer": "windowsplustools",
+      "vmImageSKU": "base-win11-gen2",
       "vmResourceName": "[concat(variables('namePrefix'), '-CLI-vm')]",
       "vmOSDiskName": "[concat(variables('namePrefix'), '-CLI-osdisk')]",
-      "vmSize": "Standard_B2ms",
+      "vmSize": "Standard_D2s_v5",
       "vmNicName": "[concat(variables('namePrefix'), '-CLI-nic')]",
       "vmPublicIPName": "[concat(variables('namePrefix'), '-CLI-pip')]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-cli'), '_', '-'))]"
@@ -186,13 +186,13 @@
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureCliVM.zip', parameters('_artifactsLocationSasToken'))]",
       "script": "ConfigureCliVM.ps1",
       "function": "ConfigureCliVM",
-      "forceUpdateTag": "1.1"
+      "forceUpdateTag": "1.2"
     },
     "dscConfigureWebVM": {
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureWebVM.zip', parameters('_artifactsLocationSasToken'))]",
       "script": "ConfigureWebVM.ps1",
       "function": "ConfigureWebVM",
-      "forceUpdateTag": "1.1"
+      "forceUpdateTag": "1.2"
     }
   },
   "resources": [
@@ -328,6 +328,13 @@
         "hardwareProfile": {
           "vmSize": "[variables('vmDC').vmSize]"
         },
+        "securityProfile": {
+          "securityType": "TrustedLaunch",
+          "uefiSettings": {
+            "secureBootEnabled": true,
+            "vTpmEnabled": true
+          }
+        },
         "osProfile": {
           "computerName": "[variables('generalSettings').vmDCName]",
           "adminUsername": "[parameters('adminUserName')]",
@@ -437,13 +444,13 @@
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgName)]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCli').vmPublicIPName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDC').vmResourceName)]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmCli').vmPublicIPName)]"
       ],
       "tags": {
         "displayName": "[variables('vmCli').vmNicName]"
       },
       "properties": {
+        "enableAcceleratedNetworking": true,
         "networkSecurityGroup": {
           "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgName)]"
         },
@@ -475,6 +482,13 @@
       "properties": {
         "hardwareProfile": {
           "vmSize": "[variables('vmCli').vmSize]"
+        },
+        "securityProfile": {
+          "securityType": "TrustedLaunch",
+          "uefiSettings": {
+            "secureBootEnabled": true,
+            "vTpmEnabled": true
+          }
         },
         "osProfile": {
           "computerName": "[variables('generalSettings').vmCliName]",
@@ -539,8 +553,7 @@
           },
           "configurationArguments": {
             "DNSServer": "[variables('vmDC').nicPrivateIPAddress]",
-            "DomainFQDN": "[variables('generalSettings').domainFQDN]",
-            "IncludeWebTools": "[variables('deployWeb')]"
+            "DomainFQDN": "[variables('generalSettings').domainFQDN]"
           },
           "privacy": {
             "dataCollection": "enable"
@@ -565,8 +578,7 @@
       "apiVersion": "2022-07-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').vNetName)]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgName)]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDC').vmResourceName)]"
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSettings').nsgName)]"
       ],
       "tags": {
         "displayName": "[variables('vmWeb').vmNicName]"
@@ -603,6 +615,13 @@
       "properties": {
         "hardwareProfile": {
           "vmSize": "[variables('vmWeb').vmSize]"
+        },
+        "securityProfile": {
+          "securityType": "TrustedLaunch",
+          "uefiSettings": {
+            "secureBootEnabled": true,
+            "vTpmEnabled": true
+          }
         },
         "osProfile": {
           "computerName": "[variables('generalSettings').vmWebName]",

@@ -11,15 +11,10 @@ foreach ($module in 'xActiveDirectory', 'NetworkingDsc', 'ComputerManagementDsc'
     }
 }
 
-$extraFiles = @(Join-Path $DscFolder 'FQDN.bgi') | Where-Object { Test-Path $_ }
-if (-not $extraFiles) {
-    Write-Warning 'dsc\FQDN.bgi not found; GDC-Cli and GDC-Web will have no FQDN wallpaper.'
-}
-
 $configs = @{
     ConfigureDCVM  = @(Join-Path $DscFolder 'SeedUsers.csv')
-    ConfigureCliVM = $extraFiles
-    ConfigureWebVM = $extraFiles
+    ConfigureCliVM = @()
+    ConfigureWebVM = @()
 }
 
 foreach ($name in $configs.Keys) {
