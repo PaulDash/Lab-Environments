@@ -2,8 +2,7 @@ configuration ConfigureDCVM {
     param (
         [Parameter(Mandatory)] [String]$DomainFQDN,
         [Parameter(Mandatory)] [System.Management.Automation.PSCredential]$Admincreds,
-        [Parameter(Mandatory)] [String]$PrivateIP,
-        [Parameter()] [bool]$CreateLabUser = $true
+        [Parameter(Mandatory)] [String]$PrivateIP
     )
 
     Import-DscResource -ModuleName xActiveDirectory, NetworkingDsc, ComputerManagementDsc
@@ -88,20 +87,18 @@ configuration ConfigureDCVM {
             DependsOn = "[PendingReboot]Reboot1"
         }
 
-        if ($CreateLabUser) {
-            xADUser LabUser {
-                DomainAdministratorCredential = $DomainCredsNetbios
-                DomainName           = $DomainFQDN
-                UserName             = 'labuser'
-                GivenName            = 'Lab'
-                Surname              = 'User'
-                DisplayName          = 'Lab User'
-                EmailAddress         = 'labuser@' + $DomainFQDN
-                Password             = $Admincreds
-                PasswordNeverExpires = $true
-                Ensure               = 'Present'
-                DependsOn            = "[PendingReboot]Reboot1"
-            }
+        xADUser LabUser {
+            DomainAdministratorCredential = $DomainCredsNetbios
+            DomainName           = $DomainFQDN
+            UserName             = 'labuser'
+            GivenName            = 'Lab'
+            Surname              = 'User'
+            DisplayName          = 'Lab User'
+            EmailAddress         = 'labuser@' + $DomainFQDN
+            Password             = $Admincreds
+            PasswordNeverExpires = $true
+            Ensure               = 'Present'
+            DependsOn            = "[PendingReboot]Reboot1"
         }
 
         #**********************************************************

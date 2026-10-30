@@ -14,14 +14,8 @@
     "deployWebServer": {
       "value": "Yes"
     },
-    "createLabUser": {
-      "value": "Yes"
-    },
-    "addPublicIPToClient": {
-      "value": "Yes"
-    },
-    "deployBastion": {
-      "value": "No"
+    "remoteAccessMethod": {
+      "value": "PublicIP"
     },
     "vNetSecondOctet": {
       "value": 30

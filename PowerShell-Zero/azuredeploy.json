@@ -13,37 +13,15 @@
         "description": "Deploy the optional WEB member server (IIS and file shares). Choose No for a two-VM lab."
       }
     },
-    "createLabUser": {
+    "remoteAccessMethod": {
       "type": "string",
-      "defaultValue": "Yes",
+      "defaultValue": "PublicIP",
       "allowedValues": [
-        "Yes",
-        "No"
+        "PublicIP",
+        "Bastion"
       ],
       "metadata": {
-        "description": "Create the non-privileged domain account 'labuser' (same password as the admin) for run-as demos."
-      }
-    },
-    "addPublicIPToClient": {
-      "type": "string",
-      "defaultValue": "Yes",
-      "allowedValues": [
-        "Yes",
-        "No"
-      ],
-      "metadata": {
-        "description": "Give CLI a public IP for RDP. Choose No when using Azure Bastion. DC and WEB never get public IPs."
-      }
-    },
-    "deployBastion": {
-      "type": "string",
-      "defaultValue": "No",
-      "allowedValues": [
-        "Yes",
-        "No"
-      ],
-      "metadata": {
-        "description": "Deploy Azure Bastion into the lab network (billed per hour while it exists)."
+        "description": "Remote access method for CLI. PublicIP assigns a public IP to CLI; Bastion deploys Azure Bastion instead. The choices are mutually exclusive."
       }
     },
     "bastionSku": {
@@ -55,14 +33,14 @@
         "Standard"
       ],
       "metadata": {
-        "description": "SKU of the Azure Bastion host. Used only when deployBastion is Yes."
+        "description": "SKU of the Azure Bastion host. Used only when remoteAccessMethod is Bastion."
       }
     },
     "rdpSourceAddressPrefix": {
       "type": "string",
       "defaultValue": "0.0.0.0/32",
       "metadata": {
-        "description": "Source address or CIDR allowed to RDP to CLI through its public IP. The default blocks all traffic; set it once the student addresses are known."
+        "description": "Source address or CIDR allowed to RDP to CLI when remoteAccessMethod is PublicIP."
       }
     },
     "vNetSecondOctet": {
@@ -175,12 +153,14 @@
       "vmNicName": "[concat(variables('namePrefix'), '-WEB-nic')]"
     },
     "deployWeb": "[equals(parameters('deployWebServer'), 'Yes')]",
-    "clientPublicIP": "[equals(parameters('addPublicIPToClient'), 'Yes')]",
+    "clientPublicIP": "[equals(parameters('remoteAccessMethod'), 'PublicIP')]",
+    "deployBastion": "[equals(parameters('remoteAccessMethod'), 'Bastion')]",
+    "rdpSourceAddressPrefix": "[if(variables('clientPublicIP'), parameters('rdpSourceAddressPrefix'), variables('networkSettings').bastionSubnetPrefix)]",
     "dscConfigureDCVM": {
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureDCVM.zip', parameters('_artifactsLocationSasToken'))]",
       "script": "ConfigureDCVM.ps1",
       "function": "ConfigureDCVM",
-      "forceUpdateTag": "1.1"
+      "forceUpdateTag": "1.2"
     },
     "dscConfigureCliVM": {
       "scriptFileUri": "[concat(parameters('_artifactsLocation'), '/dsc/ConfigureCliVM.zip', parameters('_artifactsLocationSasToken'))]",
@@ -213,7 +193,7 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "3389",
-              "sourceAddressPrefix": "[parameters('rdpSourceAddressPrefix')]",
+              "sourceAddressPrefix": "[variables('rdpSourceAddressPrefix')]",
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "priority": 100,
@@ -237,11 +217,11 @@
             "[variables('networkSettings').vNetPrefix]"
           ]
         },
-        "subnets": "[if(equals(parameters('deployBastion'), 'Yes'), concat(variables('subnetDomain'), variables('subnetBastion')), variables('subnetDomain'))]"
+        "subnets": "[if(variables('deployBastion'), concat(variables('subnetDomain'), variables('subnetBastion')), variables('subnetDomain'))]"
       }
     },
     {
-      "condition": "[equals(parameters('deployBastion'), 'Yes')]",
+      "condition": "[variables('deployBastion')]",
       "name": "[variables('networkSettings').bastionPublicIPName]",
       "type": "Microsoft.Network/publicIPAddresses",
       "location": "[resourceGroup().location]",
@@ -254,7 +234,7 @@
       }
     },
     {
-      "condition": "[equals(parameters('deployBastion'), 'Yes')]",
+      "condition": "[variables('deployBastion')]",
       "name": "[variables('networkSettings').bastionName]",
       "type": "Microsoft.Network/bastionHosts",
       "location": "[resourceGroup().location]",
@@ -397,8 +377,7 @@
               },
               "configurationArguments": {
                 "DomainFQDN": "[variables('generalSettings').domainFQDN]",
-                "PrivateIP": "[variables('vmDC').nicPrivateIPAddress]",
-                "CreateLabUser": "[equals(parameters('createLabUser'), 'Yes')]"
+                "PrivateIP": "[variables('vmDC').nicPrivateIPAddress]"
               },
               "privacy": {
                 "dataCollection": "enable"

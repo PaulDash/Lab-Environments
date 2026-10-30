@@ -11,8 +11,8 @@ Azure DevTest Labs environment for the PowerShell Zero-to-Hero course. Domain: `
 | CLI | Windows 11 + tools (Gen 2) | Trusted Launch student workstation, domain joined with RSAT |
 | WEB (optional) | Windows Server 2025 Desktop | Trusted Launch IIS/file server with seeded services and event log |
 
-Accounts: `labadmin` (domain admin) and, optionally, `labuser` (standard user) with the same password.
+Accounts: `labadmin` (domain admin) and `labuser` (standard user) with the same password.
 
 ## Key parameters
 
-`deployWebServer`, `createLabUser`, `addPublicIPToClient`, `deployBastion`, `rdpSourceAddressPrefix` (defaults to the blocking placeholder `0.0.0.0/32`; set it once student addresses are known).
+`deployWebServer`, `addPublicIPToClient`, `deployBastion`, `rdpSourceAddressPrefix` (defaults to the blocking placeholder `0.0.0.0/32`; set it once student addresses are known).
