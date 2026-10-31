@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
+  "contentVersion": "1.1.1.0",
   "parameters": {
     "deployWebServer": {
       "type": "string",
@@ -133,10 +133,10 @@
       "nicPrivateIPAddress": "[format('10.{0}.1.20', parameters('vNetSecondOctet'))]"
     },
     "vmCli": {
-      "vmImageVersionId": "/subscriptions/2e86df6f-4e12-4a53-b338-94b019c9d7b0/resourceGroups/INFRA-Deployment-weu-rg/providers/Microsoft.Compute/galleries/Deployment_Images_weu_gal/images/CLI-Win11/versions/0.1.0",
+      "vmImageVersionId": "/subscriptions/2e86df6f-4e12-4a53-b338-94b019c9d7b0/resourceGroups/INFRA-Deployment-weu-rg/providers/Microsoft.Compute/galleries/Deployment_Images_weu_gal/images/CLI-Server2025/versions/0.1.1",
       "vmResourceName": "[concat(variables('namePrefix'), '-CLI-vm')]",
       "vmOSDiskName": "[concat(variables('namePrefix'), '-CLI-osdisk')]",
-      "vmSize": "Standard_D2ads_v5",
+      "vmSize": "Standard_D2as_v7",
       "vmNicName": "[concat(variables('namePrefix'), '-CLI-nic')]",
       "vmPublicIPName": "[concat(variables('namePrefix'), '-CLI-pip')]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-cli'), '_', '-'))]"
