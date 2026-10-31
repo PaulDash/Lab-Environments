@@ -136,7 +136,7 @@
       "vmImageVersionId": "/subscriptions/2e86df6f-4e12-4a53-b338-94b019c9d7b0/resourceGroups/INFRA-Deployment-weu-rg/providers/Microsoft.Compute/galleries/Deployment_Images_weu_gal/images/CLI-Win11/versions/0.1.0",
       "vmResourceName": "[concat(variables('namePrefix'), '-CLI-vm')]",
       "vmOSDiskName": "[concat(variables('namePrefix'), '-CLI-osdisk')]",
-      "vmSize": "Standard_D2s_v4",
+      "vmSize": "Standard_D2ads_v5",
       "vmNicName": "[concat(variables('namePrefix'), '-CLI-nic')]",
       "vmPublicIPName": "[concat(variables('namePrefix'), '-CLI-pip')]",
       "vmPublicIPDnsName": "[toLower(replace(concat(resourceGroup().name, '-cli'), '_', '-'))]"
