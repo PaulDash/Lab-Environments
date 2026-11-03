@@ -13,3 +13,7 @@ For learners, it provides an isolated and consistent environment in which they c
 ## Mastering-PKI
 
 For the Mastering PKI course. This includes four Windows VMs and (optionally) one Linux VM.
+
+## PowerShell
+
+For the PowerShell course. This includes three Windows VMs.
