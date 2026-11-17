@@ -1,0 +1,163 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 800,
+      "metadata": {
+        "description": "Number of lab VMs and network interfaces to create."
+      }
+    },
+    "startingId": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 0,
+      "metadata": {
+        "description": "Starting numeric suffix for VM, OS disk, NIC, and computer names."
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2s_v6",
+      "allowedValues": [
+        "Standard_D2s_v6",
+        "Standard_D2as_v7",
+        "Standard_D2ads_v7",
+        "Standard_D2as_v6",
+        "Standard_D2ads_v6"
+      ],
+      "metadata": {
+        "description": "Virtual machine size for each lab VM."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Local administrator password for the lab VMs."
+      }
+    },
+    "galleries_Deployment_Images_weu_gal_externalid": {
+      "defaultValue": "/subscriptions/2e86df6f-4e12-4a53-b338-94b019c9d7b0/resourceGroups/INFRA-Deployment-weu-rg/providers/Microsoft.Compute/galleries/Deployment_Images_weu_gal",
+      "type": "string"
+    },
+    "virtualNetworks_Lab_vnet_externalid": {
+      "defaultValue": "/subscriptions/2e86df6f-4e12-4a53-b338-94b019c9d7b0/resourceGroups/APP-Lab-Core-rg/providers/Microsoft.Network/virtualNetworks/Lab-vnet",
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2025-09-01",
+      "copy": {
+        "name": "nicCopy",
+        "count": "[parameters('vmCount')]"
+      },
+      "name": "[format('LAB-pwsh-{0}-vnic', format('{0:D2}', add(parameters('startingId'), copyIndex())))]",
+      "location": "westeurope",
+      "tags": {
+        "fastpathenabled": "True"
+      },
+      "kind": "Regular",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[concat(parameters('virtualNetworks_Lab_vnet_externalid'), '/subnets/default')]"
+              },
+              "primary": true,
+              "privateIPAddressVersion": "IPv4"
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": []
+        },
+        "enableAcceleratedNetworking": false,
+        "enableIPForwarding": false,
+        "disableTcpStateTracking": false,
+        "nicType": "Standard",
+        "auxiliaryMode": "None",
+        "auxiliarySku": "None"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2026-04-01",
+      "copy": {
+        "name": "vmCopy",
+        "count": "[parameters('vmCount')]"
+      },
+      "name": "[format('LAB-pwsh-{0}-vm', format('{0:D2}', add(parameters('startingId'), copyIndex())))]",
+      "location": "westeurope",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', format('LAB-pwsh-{0}-vnic', format('{0:D2}', add(parameters('startingId'), copyIndex()))))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "id": "[concat(parameters('galleries_Deployment_Images_weu_gal_externalid'), '/images/CLI-Server2025')]"
+          },
+          "osDisk": {
+            "osType": "Windows",
+            "name": "[format('LAB-pwsh-{0}-osdisk', format('{0:D2}', add(parameters('startingId'), copyIndex())))]",
+            "createOption": "FromImage",
+            "caching": "ReadWrite",
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            },
+            "deleteOption": "Delete",
+            "diskSizeGB": 30
+          },
+          "dataDisks": [],
+          "diskControllerType": "NVMe"
+        },
+        "osProfile": {
+          "computerName": "[format('vm{0}', format('{0:D2}', add(parameters('startingId'), copyIndex())))]",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true,
+            "patchSettings": {
+              "patchMode": "AutomaticByOS",
+              "assessmentMode": "ImageDefault"
+            }
+          },
+          "secrets": [],
+          "allowExtensionOperations": true,
+          "adminUsername": "localadmin",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "securityProfile": {
+          "uefiSettings": {
+            "secureBootEnabled": true,
+            "vTpmEnabled": false
+          },
+          "securityType": "TrustedLaunch"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', format('LAB-pwsh-{0}-vnic', format('{0:D2}', add(parameters('startingId'), copyIndex()))))]",
+              "properties": {
+                "primary": true,
+                "deleteOption": "Delete"
+              }
+            }
+          ]
+        },
+        "licenseType": "None",
+        "priority": "Regular"
+      }
+    }
+  ]
+}
